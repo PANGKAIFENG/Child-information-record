@@ -26,6 +26,22 @@ Page({
     this.loadBabyInfo();
     this.loadTodayStats();
     this.loadRecentRecords();
+    
+    // 监听宝宝信息更新事件
+    const eventChannel = this.getOpenerEventChannel();
+    if (eventChannel && eventChannel.on) {
+      eventChannel.on('babyInfoUpdated', (data) => {
+        console.log('Received babyInfoUpdated event', data);
+        if (data && data.babyInfo) {
+          this.setData({
+            babyInfo: data.babyInfo
+          });
+          // 也可以刷新其他相关数据
+          this.loadTodayStats();
+          this.loadRecentRecords();
+        }
+      });
+    }
   },
 
   onShow: function() {
@@ -212,7 +228,7 @@ Page({
   /**
    * 加载最近记录 (从云数据库获取)
    */
-  async loadRecentRecords() {;
+  async loadRecentRecords() {
     // --- 添加日志 ---
     const storedOpenidForRecent = wx.getStorageSync('openid');
     console.log('[loadRecentRecords] Attempting to load recent records. OpenID from storage:', storedOpenidForRecent);

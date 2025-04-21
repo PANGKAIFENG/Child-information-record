@@ -1,4 +1,7 @@
-async loadRecentRecords() {
+Page({
+  // 其他函数和数据...
+  
+  async loadRecentRecords() {
     if (!this.data.openid) {
       console.log('[loadRecentRecords] OpenID not ready.');
       return;
@@ -76,3 +79,4 @@ async loadRecentRecords() {
       wx.showToast({ title: '加载记录失败', icon: 'none' });
     }
   },
+})

@@ -346,6 +346,25 @@ Page({
           wx.setStorageSync('isInfoSet', true);
           wx.setStorageSync('babyInfo', this.data.babyInfo);
           console.log('宝宝信息已更新到本地缓存');
+          
+          // 发送事件通知首页刷新头像
+          const eventChannel = this.getOpenerEventChannel();
+          if (eventChannel && eventChannel.emit) {
+            try {
+              eventChannel.emit('babyInfoUpdated', { babyInfo: this.data.babyInfo });
+            } catch(e) {
+              console.log('事件通知发送失败，可能不是从首页打开的', e);
+            }
+          }
+          
+          // 强制刷新TabBar页面
+          const pages = getCurrentPages();
+          if (pages.length > 0) {
+            const homePage = pages.find(p => p.route && p.route.includes('/pages/home/home'));
+            if (homePage) {
+              homePage.onShow(); // 主动触发首页的onShow方法
+            }
+          }
         } catch(e) {
           console.error('保存宝宝信息到本地缓存失败:', e);
         }
@@ -371,6 +390,15 @@ Page({
     console.log('Edit baby info clicked');
     // 只改变状态，让页面进入编辑模式，保留现有数据
     this.setData({ isInfoSet: false }); 
+  },
+
+  /**
+   * 跳转到家庭管理页面
+   */
+  goToFamilyManage() {
+    wx.navigateTo({
+      url: '/src/pages/family/family'
+    });
   },
 
   /**

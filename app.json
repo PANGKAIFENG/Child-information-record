@@ -8,7 +8,8 @@
     "src/pages/record/supplement/supplement",
     "src/pages/record/abnormal/abnormal",
     "src/pages/record/abnormalList/abnormalList",
-    "src/pages/my/my"
+    "src/pages/my/my",
+    "src/pages/family/family"
   ],
   "window": {
     "backgroundTextStyle": "light",

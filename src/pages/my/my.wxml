@@ -64,18 +64,30 @@
       <image class="edit-icon" src="/src/assets/images/edit-icon.png" mode="aspectFit" bindtap="editBabyInfo"></image>
     </view>
 
-    <view class="action-list">
-      <!-- 移除旧的编辑按钮 -->
-      <!-- <button class="action-item" bindtap="editBabyInfo">编辑宝宝信息</button> -->
-      <!-- 退出登录按钮将移到下面 -->
-      <!-- <button class="action-item logout-btn" bindtap="handleLogout">退出登录</button> -->
-      <!-- 未来可以添加其他设置项 -->
+    <!-- 功能卡片 -->
+    <view class="function-card">
+      <!-- 家庭管理放在第一位 -->
+      <view class="function-item" bindtap="goToFamilyManage">
+        <view class="function-icon-wrapper">
+          <image class="function-icon" src="/src/assets/images/family-icon.png" mode="aspectFit"></image>
+        </view>
+        <text class="function-text">家庭管理</text>
+        <view class="arrow-icon">></view>
+      </view>
+      
+      <!-- 这里可以添加其他功能项 -->
+      
     </view>
-
-    <!-- 退出登录按钮移到容器底部 -->
     
+    <!-- 可以再加一个功能卡片放其他功能 -->
+    <!-- <view class="function-card">
+      其他功能项
+    </view> -->
+    
+    <!-- 退出登录按钮放在底部，单独成卡片 -->
+    <view class="logout-card" bindtap="handleLogout">
+      <text class="logout-text">退出登录</text>
+    </view>
   </view>
-  <!-- 退出登录按钮移到容器底部，但在登录状态下才显示 -->
-  <button wx:if="{{isLoggedIn}}" class="logout-btn-bottom" bindtap="handleLogout">退出登录</button>
 
 </view>
