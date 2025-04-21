@@ -21,7 +21,7 @@
       <!-- <text class="metric-change {{coreMetrics.feedingChangeStatus}}">{{coreMetrics.feedingChange}}</text> -->
     </view>
     <view class="metric-card">
-      <text class="metric-title">平均喂养量</text>
+      <text class="metric-title">总奶量</text>
       <text class="metric-value" wx:if="{{coreMetrics.avgMilk !== undefined}}">{{coreMetrics.avgMilk}}ml</text>
       <text class="metric-value" wx:else>-</text>
       <!-- <text class="metric-change {{coreMetrics.milkChangeStatus}}">{{coreMetrics.milkChange}}</text> -->

@@ -414,11 +414,11 @@ Page({
       case 'feeding':
         // 喂养记录使用 feedingType, amount 字段
         if (record.feedingType === '母乳') {
-          // 如果有amount字段，优先显示毫升，否则显示时长
+          // 如果有amount字段，优先显示毫升，否则只显示"母乳"
           if (record.amount) {
             return `${record.feedingType} ${record.amount}ml`;
-          } else if (record.duration) {
-            return `${record.feedingType} ${record.duration}分钟`;
+          } else {
+            return `${record.feedingType}`;
           }
         }
         if (record.feedingType === '奶粉') {

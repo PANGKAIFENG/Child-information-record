@@ -91,6 +91,8 @@
 .form-container {
   flex: 1;
   padding: 0 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-item {
@@ -111,8 +113,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 50px 0;
+  margin: 0;
   width: 100%;
+  flex: 1; /* 让容器占据剩余空间，帮助居中 */
+  min-height: 400px; /* 最小高度确保足够空间 */
 }
 
 .timer-display {
@@ -164,23 +168,77 @@
 
 /* 开始睡眠按钮 - 圆形 */
 .start-sleep-btn {
-  width: 120px;
-  height: 120px;
-  border-radius: 60px;
-  background-color: #ff6b81;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%; /* 使用50%确保完美圆形 */
+  background: linear-gradient(135deg, #ff6b81, #ff4757);
   color: #fff;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(255, 107, 129, 0.3);
+  box-shadow: 0 8px 20px rgba(255, 107, 129, 0.4);
   border: none;
   margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+  padding: 0; /* 移除默认padding */
+}
+
+.btn-text {
+  position: relative;
+  z-index: 2;
+}
+
+.btn-ripple {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+  opacity: 0;
+  z-index: 1;
+  animation: ripple 1.5s ease-in-out infinite;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0.5;
+  }
+}
+
+.start-sleep-btn::after {
+  content: "";
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 40%;
+  background: linear-gradient(
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: rotate(-30deg);
+  border-radius: 50%;
 }
 
 .start-sleep-btn:active {
-  filter: brightness(0.9);
+  transform: scale(0.95);
+  box-shadow: 0 4px 10px rgba(255, 107, 129, 0.3);
 }
 
 /* 结束睡眠按钮 */

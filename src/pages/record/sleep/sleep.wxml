@@ -32,7 +32,10 @@
       </view>
       
       <view class="timer-buttons" wx:if="{{!timerRunning && !timerCompleted}}">
-        <button class="start-sleep-btn" bindtap="toggleTimer">开始睡眠</button>
+        <button class="start-sleep-btn" bindtap="toggleTimer">
+          <text class="btn-text">开始睡眠</text>
+          <view class="btn-ripple"></view>
+        </button>
       </view>
       
       <view class="timer-buttons" wx:if="{{timerRunning}}">

@@ -173,15 +173,21 @@ Component({
       if (this.chart && e.touches.length > 0) {
         var touch = e.touches[0];
         var handler = this.chart.getZr().handler;
-        handler.dispatch('mousedown', {
+        // 创建自定义事件对象，避免调用preventDefault
+        const event = {
           zrX: touch.x,
-          zrY: touch.y
-        });
-        handler.dispatch('mousemove', {
-          zrX: touch.x,
-          zrY: touch.y
-        });
-        handler.processGesture(wrapTouch(e), 'start');
+          zrY: touch.y,
+          preventDefault: function() {},
+          stopPropagation: function() {}
+        };
+        handler.dispatch('mousedown', event);
+        handler.dispatch('mousemove', event);
+
+        // 修改手势事件处理
+        const gesture = wrapTouch(e);
+        gesture.preventDefault = function() {};
+        gesture.stopPropagation = function() {};
+        handler.processGesture(gesture, 'start');
       }
     },
 
@@ -189,11 +195,20 @@ Component({
       if (this.chart && e.touches.length > 0) {
         var touch = e.touches[0];
         var handler = this.chart.getZr().handler;
-        handler.dispatch('mousemove', {
+        // 创建自定义事件对象，避免调用preventDefault
+        const event = {
           zrX: touch.x,
-          zrY: touch.y
-        });
-        handler.processGesture(wrapTouch(e), 'change');
+          zrY: touch.y,
+          preventDefault: function() {},
+          stopPropagation: function() {}
+        };
+        handler.dispatch('mousemove', event);
+
+        // 修改手势事件处理
+        const gesture = wrapTouch(e);
+        gesture.preventDefault = function() {};
+        gesture.stopPropagation = function() {};
+        handler.processGesture(gesture, 'change');
       }
     },
 
@@ -201,21 +216,31 @@ Component({
       if (this.chart) {
         const touch = e.changedTouches ? e.changedTouches[0] : {};
         var handler = this.chart.getZr().handler;
-        handler.dispatch('mouseup', {
+        // 创建自定义事件对象，避免调用preventDefault
+        const event = {
           zrX: touch.x,
-          zrY: touch.y
-        });
-        handler.dispatch('click', {
-          zrX: touch.x,
-          zrY: touch.y
-        });
-        handler.processGesture(wrapTouch(e), 'end');
+          zrY: touch.y,
+          preventDefault: function() {},
+          stopPropagation: function() {}
+        };
+        handler.dispatch('mouseup', event);
+        handler.dispatch('click', event);
+        
+        // 修改手势事件处理
+        const gesture = wrapTouch(e);
+        gesture.preventDefault = function() {};
+        gesture.stopPropagation = function() {};
+        handler.processGesture(gesture, 'end');
       }
     }
   }
 });
 
 function wrapTouch(event) {
+  // 为事件对象添加空的preventDefault和stopPropagation方法
+  event.preventDefault = event.preventDefault || function() {};
+  event.stopPropagation = event.stopPropagation || function() {};
+  
   for (let i = 0; i < event.touches.length; ++i) {
     const touch = event.touches[i];
     touch.offsetX = touch.x;
