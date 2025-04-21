@@ -1,0 +1,201 @@
+/* src/pages/my/my.wxss */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30rpx;
+  box-sizing: border-box;
+  min-height: 100vh;
+  background-color: var(--background-page);
+}
+
+/* --- 状态一：未登录 --- */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding-top: 100rpx; /* 可以适当减少 padding-top */
+}
+
+/* 移除 .logo 样式 */
+/* .logo {
+  width: 150rpx;
+  height: 150rpx;
+  margin-bottom: 20rpx;
+} */
+
+.app-desc {
+  font-size: 30rpx;
+  color: var(--text-secondary);
+  margin-bottom: 80rpx;
+}
+
+.login-btn {
+  width: 80%;
+  margin-bottom: 60rpx;
+  background-color: var(--primary-color);
+}
+
+.features-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20rpx;
+  opacity: 0.7;
+}
+
+.feature-item {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  background-color: var(--background-card);
+  padding: 10rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+/* --- 状态二：设置信息 --- */
+.setup-container {
+  width: 100%;
+}
+
+.setup-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 40rpx;
+  color: var(--text-primary);
+}
+
+.form-item {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  padding: 25rpx 30rpx;
+  margin-bottom: 20rpx;
+  border-radius: 10rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-label {
+  width: 160rpx; /* 固定标签宽度 */
+  font-size: 30rpx;
+  color: var(--text-secondary);
+}
+
+.avatar-item {
+  justify-content: space-between;
+}
+
+.avatar-wrapper {
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: none;
+  line-height: normal;
+  overflow: visible; /* 确保按钮样式不影响图片 */
+}
+.avatar-wrapper::after {
+    border: none;
+}
+
+.avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  border: 1rpx solid #eee;
+}
+
+.form-input,
+.picker-value {
+  flex: 1;
+  font-size: 30rpx;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.picker-value {
+  padding-right: 5rpx; /* 给 picker 留点空间 */
+}
+
+input[type="nickname"]::placeholder {
+  color: var(--text-placeholder);
+  font-size: 30rpx;
+}
+
+.save-btn {
+  width: 100%;
+  margin-top: 40rpx;
+  background-color: var(--primary-color);
+}
+
+/* --- 状态三：已设置信息 --- */
+.profile-container {
+  width: 100%;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  padding: 40rpx 30rpx;
+  border-radius: 10rpx;
+  margin-bottom: 40rpx;
+  position: relative; /* 添加相对定位，以便绝对定位编辑图标 */
+}
+
+.avatar-display {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  margin-right: 30rpx;
+}
+
+.info-text {
+  flex: 1;
+}
+
+.baby-name {
+  font-size: 36rpx;
+  font-weight: bold;
+  margin-bottom: 10rpx;
+  color: var(--text-primary);
+}
+
+.baby-birthdate {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+}
+
+/* 新增：编辑图标样式 */
+.edit-icon {
+  position: absolute;
+  top: 30rpx; /* 调整垂直位置 */
+  right: 30rpx; /* 调整水平位置 */
+  width: 40rpx; /* 设置图标大小 */
+  height: 40rpx;
+  padding: 10rpx; /* 增加点击区域 */
+}
+
+.action-list {
+  width: 100%;
+  /* 如果列表为空了，可以考虑隐藏或给个提示 */
+}
+
+/* 新增：底部退出登录按钮样式 */
+.logout-btn-bottom {
+  width: calc(100% - 60rpx); /* 左右留边距 */
+  position: fixed; /* 固定在底部 */
+  bottom: 40rpx;  /* 距离底部距离 */
+  left: 30rpx;
+  right: 30rpx;
+  background-color: var(--warn-bg-color);
+  color: var(--warn-color);
+  font-size: 32rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 10rpx;
+}
+.logout-btn-bottom::after {
+    border: none; /* 移除 button 默认边框 */
+}

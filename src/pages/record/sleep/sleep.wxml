@@ -1,0 +1,134 @@
+<view class="container">
+  <!-- 头部导航 -->
+  <view class="header">
+    <view class="nav-btn cancel-btn" bindtap="cancelRecord">取消</view>
+    <view class="page-title">睡眠记录</view>
+    <view class="nav-btn save-btn {{isFormValid ? '' : 'disabled'}}" bindtap="saveRecord">保存</view>
+  </view>
+
+  <!-- 记录方式选择 -->
+  <view class="mode-switch">
+    <view class="mode-item {{recordMode === 'timer' ? 'active' : ''}}" bindtap="switchMode" data-mode="timer">
+      <text>计时器</text>
+    </view>
+    <view class="mode-item {{recordMode === 'manual' ? 'active' : ''}}" bindtap="switchMode" data-mode="manual">
+      <text>手动输入</text>
+    </view>
+  </view>
+
+  <!-- 计时器模式 -->
+  <view class="form-container" wx:if="{{recordMode === 'timer'}}">
+    <!-- 计时器状态 -->
+    <view class="timer-container">
+      <view class="timer-display" wx:if="{{timerRunning || timerPaused}}">
+        <text class="timer-text">{{timerDisplay}}</text>
+        <text class="timer-status">{{timerRunning ? '记录中...' : '已暂停'}}</text>
+      </view>
+      
+      <!-- 睡眠时长显示（仅计时结束后显示） -->
+      <view class="sleep-duration-display" wx:if="{{timerCompleted}}">
+        <text class="duration-label">本次睡眠时长</text>
+        <text class="duration-value">{{duration}} 小时</text>
+      </view>
+      
+      <view class="timer-buttons" wx:if="{{!timerRunning && !timerCompleted}}">
+        <button class="start-sleep-btn" bindtap="toggleTimer">开始睡眠</button>
+      </view>
+      
+      <view class="timer-buttons" wx:if="{{timerRunning}}">
+        <button class="end-sleep-btn" bindtap="toggleTimer">结束睡眠</button>
+      </view>
+      
+      <view class="timer-buttons" wx:if="{{timerPaused}}">
+        <button class="timer-btn reset" bindtap="resetTimer">重置</button>
+        <button class="timer-btn resume" bindtap="toggleTimer">继续记录</button>
+      </view>
+    </view>
+
+    <!-- 睡眠质量（仅计时结束后显示） -->
+    <view class="form-item" wx:if="{{timerCompleted}}">
+      <text class="form-label">睡眠质量</text>
+      <view class="quality-selection">
+        <view class="quality-item {{sleepQuality === 'good' ? 'active' : ''}}" bindtap="selectQuality" data-quality="good">
+          <text>好</text>
+        </view>
+        <view class="quality-item {{sleepQuality === 'normal' ? 'active' : ''}}" bindtap="selectQuality" data-quality="normal">
+          <text>一般</text>
+        </view>
+        <view class="quality-item {{sleepQuality === 'bad' ? 'active' : ''}}" bindtap="selectQuality" data-quality="bad">
+          <text>差</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="form-item" wx:if="{{timerCompleted || timerRunning}}">
+      <text class="form-label">备注</text>
+      <textarea class="note-input" placeholder="添加备注..." value="{{notes}}" bindinput="inputNotes"></textarea>
+    </view>
+  </view>
+
+  <!-- 手动输入模式 -->
+  <view class="form-container" wx:if="{{recordMode === 'manual'}}">
+    <!-- 日期和时间 -->
+    <view class="form-item">
+      <text class="form-label">日期和时间</text>
+      <view class="datetime-container">
+        <picker mode="date" value="{{date}}" bindchange="bindDateChange">
+          <view class="date-picker">
+            <text>{{date}}</text>
+          </view>
+        </picker>
+        
+        <!-- 开始时间 -->
+        <picker mode="time" value="{{startTime}}" bindchange="bindStartTimeChange">
+          <view class="time-picker">
+            <text>{{startTime}}</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- 结束时间 -->
+    <view class="form-item">
+      <text class="form-label">结束时间</text>
+      <view class="datetime-container">
+        <picker mode="time" value="{{endTime}}" bindchange="bindEndTimeChange">
+          <view class="time-picker">
+            <text>{{endTime}}</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- 睡眠时长 -->
+    <view class="form-item">
+      <text class="form-label">睡眠时长</text>
+      <view class="duration-display">
+        <text>{{duration}} 小时</text>
+      </view>
+    </view>
+
+    <!-- 睡眠质量 -->
+    <view class="form-item">
+      <text class="form-label">睡眠质量</text>
+      <view class="quality-selection">
+        <view class="quality-item {{sleepQuality === 'good' ? 'active' : ''}}" bindtap="selectQuality" data-quality="good">
+          <text>好</text>
+        </view>
+        <view class="quality-item {{sleepQuality === 'normal' ? 'active' : ''}}" bindtap="selectQuality" data-quality="normal">
+          <text>一般</text>
+        </view>
+        <view class="quality-item {{sleepQuality === 'bad' ? 'active' : ''}}" bindtap="selectQuality" data-quality="bad">
+          <text>差</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="form-item">
+      <text class="form-label">备注</text>
+      <textarea class="note-input" placeholder="添加备注..." value="{{notes}}" bindinput="inputNotes"></textarea>
+    </view>
+  </view>
+</view> 

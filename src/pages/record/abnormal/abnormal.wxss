@@ -1,0 +1,316 @@
+/* 异常记录页面样式 */
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--background-page);
+}
+
+/* 头部导航样式 */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background-color: var(--background-card);
+  border-bottom: 1rpx solid var(--border-color);
+  position: relative;
+}
+
+.page-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.nav-btn {
+  font-size: 30rpx;
+  padding: 10rpx 0;
+  min-width: 80rpx;
+  text-align: center;
+  color: var(--primary-color);
+  background: none !important;
+  border: none !important;
+  line-height: normal;
+}
+
+.cancel-btn {
+  color: var(--cancel-color) !important;
+}
+
+.save-btn.disabled {
+  color: var(--text-placeholder) !important;
+  opacity: 1;
+}
+
+/* 表单样式 */
+.form-scroll { /* 新增：滚动区域样式 */
+  flex: 1; /* 占据剩余空间 */
+  height: 0; /* 配合 flex: 1 生效 */
+  background-color: var(--background-page); /* 新增：设置背景色与页面一致 */
+  box-sizing: border-box; /* 建议加上 */
+}
+
+.form-container {
+  /* flex: 1; */ /* 移除 flex: 1 */
+  padding: 30rpx; /* 保留内边距 */
+  /* overflow-y: auto; */ /* 移除 overflow */
+}
+
+.form-item {
+  background-color: var(--background-card);
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  margin-bottom: 20rpx;
+}
+
+/* 异常类型选择 - 新样式 */
+.type-options-group {
+  display: flex;
+  flex-wrap: wrap; /* 允许换行 */
+  gap: 15rpx; /* 选项之间的间距 */
+}
+
+.type-option-label {
+  display: flex;
+  align-items: center;
+  background-color: #f8f8f8;
+  padding: 10rpx 20rpx;
+  border-radius: 25rpx; /* 圆角 */
+  border: 1rpx solid #eee;
+}
+
+.type-checkbox {
+  transform: scale(0.8); /* 缩小 checkbox 大小 */
+  margin-right: 8rpx;
+}
+
+.type-name {
+  font-size: 28rpx;
+  color: #333;
+}
+
+/* 其它输入框样式 */
+.other-input {
+  margin-top: 15rpx; /* 与选项的间距 */
+  padding: 0 20rpx; /* 调整 padding，垂直方向由 height 控制 */
+  border: 1rpx solid #eee;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  width: calc(100% - 40rpx); /* 减去左右 padding */
+  box-sizing: border-box;
+  background-color: #fff; /* 确保背景色 */
+  height: 80rpx; /* 新增：设置固定高度 */
+  line-height: 80rpx; /* 新增：让文字垂直居中 */
+}
+
+/* 体温记录 */
+.temperature-input {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.temp-adjust-btn {
+  width: 60rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  text-align: center;
+  font-size: 36rpx;
+  font-weight: bold;
+  background-color: var(--background-page);
+  border-radius: 8rpx;
+  color: var(--text-secondary);
+}
+
+.temp-value {
+  width: 120rpx;
+  height: 80rpx;
+  margin: 0 20rpx;
+  text-align: center;
+  background-color: var(--background-input);
+  border-radius: 8rpx;
+  font-size: 32rpx;
+  color: var(--text-primary);
+}
+
+.temp-unit {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  margin-right: 20rpx;
+}
+
+/* 日期时间选择 */
+.datetime-section {
+  display: flex;
+  align-items: center;
+}
+
+.date-picker, .time-picker {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  font-size: 30rpx;
+  color: var(--text-primary);
+  padding: 0 20rpx;
+  background-color: var(--background-input);
+  border-radius: 8rpx;
+}
+
+.time-picker {
+  margin-left: 20rpx;
+}
+
+.now-btn {
+  margin-left: 20rpx;
+  padding: 0 20rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  font-size: 26rpx;
+  color: #fff;
+  background-color: var(--primary-color);
+  border-radius: 8rpx;
+  text-align: center;
+}
+
+/* 照片上传 */
+.photo-uploader {
+  margin-top: 20rpx;
+}
+
+.photo-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.photo-item {
+  width: 160rpx;
+  height: 160rpx;
+  margin: 0 20rpx 20rpx 0;
+  position: relative;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.photo-item image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.delete-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40rpx;
+  height: 40rpx;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 30rpx;
+  text-align: center;
+  line-height: 36rpx;
+}
+
+.add-photo {
+  width: 160rpx;
+  height: 160rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background-input);
+  border-radius: 8rpx;
+  margin-right: 20rpx;
+}
+
+.add-photo image {
+  width: 60rpx;
+  height: 60rpx;
+}
+
+/* 备注区域 */
+.remark-container {
+  position: relative;
+}
+
+.remark-input {
+  width: 100%;
+  height: 200rpx;
+  font-size: 28rpx;
+  padding: 20rpx;
+  background-color: var(--background-input);
+  border-radius: 8rpx;
+  box-sizing: border-box;
+  color: var(--text-primary);
+}
+
+.remark-counter {
+  position: absolute;
+  right: 20rpx;
+  bottom: 20rpx;
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+/* 底部按钮组 */
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  padding: 30rpx;
+  background-color: var(--background-card);
+  border-top: 1rpx solid var(--border-color);
+}
+
+.btn-cancel, .btn-save {
+  width: 48%;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  font-size: 32rpx;
+  border-radius: 8rpx;
+}
+
+.btn-cancel {
+  background-color: var(--cancel-bg-color);
+  color: var(--text-secondary);
+}
+
+.btn-save {
+  background-color: var(--save-color);
+  color: #fff;
+}
+
+.btn-save[disabled] {
+  opacity: 0.7;
+  color: #fff;
+}
+
+/* 为禁用状态添加通用样式 */
+.disabled {
+  opacity: 0.6; /* 降低透明度 */
+  pointer-events: none; /* 阻止点击事件 */
+}
+
+/* 特别针对 picker 的禁用视图 */
+.picker-view.disabled {
+  color: var(--text-placeholder); /* 文本颜色变浅 */
+  /* background-color: #f8f8f8; */ /* 可以改变背景色 */
+}
+
+/* 针对底部按钮的禁用样式 */
+.btn-save.disabled {
+  background-color: #ccc !important; /* 覆盖原背景色 */
+  color: #fff !important; /* 确保文字可见 */
+  opacity: 0.7;
+}
+
+/* 针对 header 中编辑按钮的样式 (如果需要) */
+.edit-btn {
+  color: var(--primary-color); /* 可以设置特定颜色 */
+} 

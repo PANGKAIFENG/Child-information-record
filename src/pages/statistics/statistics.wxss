@@ -1,0 +1,131 @@
+/* 统计分析页样式 */
+.container {
+  padding: 15px;
+  padding-bottom: 60px; /* 为底部导航栏留出空间 */
+  background-color: var(--background-page); /* 使用页面背景灰 */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text-primary); /* 使用主要文字颜色 */
+}
+
+/* 更新 date-picker 样式以匹配目标 */
+.date-picker {
+  display: flex;
+  align-items: center; /* 垂直居中 */
+  background-color: transparent; /* 移除背景 */
+  padding: 0; /* 移除内边距 */
+  border-radius: 0; /* 移除圆角 */
+  color: var(--text-secondary); /* 使用次要文字颜色，更像标签 */
+  font-size: 14px;
+  line-height: 1;
+}
+
+.picker-text {
+  margin-right: 10rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+/* 新增：为文本箭头添加样式 */
+.picker-arrow-char {
+  font-size: 24rpx; /* 控制箭头大小 */
+  color: #999; /* 箭头颜色 */
+  margin-left: 5rpx; /* 与文字的间距 */
+}
+
+/* 移除 .calendar-icon 样式 */
+
+/* 移除旧 .tabs 样式 */
+/* .tabs { ... } */
+/* .tab { ... } */
+/* .tab.active { ... } */
+/* .tab.active::after { ... } */
+
+.core-metrics {
+  /* 改回 Grid 布局 */
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 两列均分 */
+  grid-gap: 20rpx; /* 卡片间距 */
+  margin-bottom: 20rpx;
+  /* 移除容器的样式 */
+  /* padding: 20rpx; */
+  /* background-color: #fff; */
+  /* border-radius: 10rpx; */
+  /* box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05); */
+}
+
+.metric-card {
+  /* background-color: var(--background-card); */ /* 移除旧背景 */
+  /* 将容器样式移到卡片上 */
+  background-color: #fff;
+  border-radius: 10rpx; /* 使用和之前容器一致的圆角 */
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05); /* 使用和之前容器一致的阴影 */
+  padding: 30rpx 20rpx; /* 调整内边距，上下多一些 */
+  display: flex;
+  flex-direction: column;
+  /* 新增：文字居中 */
+  align-items: center;
+  text-align: center;
+}
+
+.metric-title {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 10rpx; /* 增大标题和数值间距 */
+}
+
+.metric-value {
+  font-size: 20px;
+  font-weight: bold;
+  /* margin-bottom: 4px; */ /* 移除底部间距，因为不需要 change 了 */
+  color: var(--text-primary); /* 使用主要文字颜色 */
+}
+
+.metric-change {
+  /* 如果不需要显示变化，可以注释或删除 */
+  font-size: 12px;
+}
+
+.increase {
+  color: #4caf50; /* 保持绿色，或定义新变量 --success-color */
+}
+
+.decrease {
+  color: var(--danger-color); /* 使用危险红 */
+}
+
+.neutral {
+  color: var(--text-secondary); /* 使用次要文字灰 */
+}
+
+.chart-container {
+  background-color: var(--background-card); /* 使用卡片背景白 */
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+
+/* 新增: chart-wrapper 样式 */
+.chart-wrapper {
+  width: 100%;
+  height: 250px; /* 设置图表高度 */
+}
+
+/* 移除 .chart-placeholder, .chart-image 样式 */ 

@@ -1,0 +1,103 @@
+<view class="container">
+  <!-- 头部导航 -->
+  <view class="header">
+    <view class="nav-btn cancel-btn" bindtap="cancel">取消</view>
+    <view class="page-title">大小便记录</view>
+    <view class="nav-btn save-btn" bindtap="saveRecord">保存</view>
+  </view>
+
+  <view class="form-section">
+    <!-- 排泄类型选择 -->
+    <view class="type-selection">
+      <view class="type-item {{excretionType === 'pee' ? 'active' : ''}}" bindtap="switchType" data-type="pee">
+        <text>小便</text>
+      </view>
+      <view class="type-item {{excretionType === 'poop' ? 'active' : ''}}" bindtap="switchType" data-type="poop">
+        <text>大便</text>
+      </view>
+    </view>
+
+    <!-- 时间选择 -->
+    <view class="form-item">
+      <text class="form-label">日期和时间</text>
+      <view class="datetime-container">
+        <picker mode="date" value="{{date}}" bindchange="bindDateChange">
+          <view class="date-picker">
+            <text>{{date}}</text>
+          </view>
+        </picker>
+        
+        <picker mode="time" value="{{time}}" bindchange="bindTimeChange">
+          <view class="time-picker">
+            <text>{{time}}</text>
+          </view>
+        </picker>
+        <view class="now-btn" bindtap="setCurrentTime">现在</view>
+      </view>
+    </view>
+
+    <!-- 大便相关选项（仅大便时显示） -->
+    <block wx:if="{{excretionType === 'poop'}}">
+      <!-- 形状选择 - 改为 Picker -->
+      <view class="form-item">
+        <text class="form-label">形状</text>
+        <picker bindchange="bindConsistencyChange" value="{{consistencyIndex}}" range="{{consistencyOptions}}">
+          <view class="form-picker">
+            <view>{{consistencyOptions[consistencyIndex]}}</view>
+            <view class="picker-arrow"></view> 
+          </view>
+        </picker>
+      </view>
+      
+      <!-- 大便量选择 - 改为 Picker -->
+      <view class="form-item">
+        <text class="form-label">大便量</text>
+         <picker bindchange="bindAmountChange" value="{{amountIndex}}" range="{{amountOptions}}">
+          <view class="form-picker">
+            <view>{{amountOptions[amountIndex]}}</view>
+            <view class="picker-arrow"></view> 
+          </view>
+        </picker>
+      </view>
+    </block>
+
+    <!-- 备注 -->
+    <view class="form-item">
+      <text class="form-label">备注</text>
+      <textarea class="note-input" 
+                placeholder="添加备注..." 
+                value="{{note}}" 
+                bindinput="noteInput" 
+                maxlength="200"></textarea>
+      <view class="remark-counter">{{note.length}}/200</view>
+    </view>
+
+    <!-- 照片上传（重构） -->
+    <view class="form-item">
+      <text class="form-label">添加照片（可选，最多{{maxPhotos}}张）</text>
+      <view class="photo-uploader">
+        <view class="photo-list">
+          <!-- 显示已选图片 -->
+          <block wx:for="{{photos}}" wx:key="*this">
+            <view class="photo-item">
+              <image src="{{item}}" 
+                     mode="aspectFill" 
+                     bindtap="previewImage" 
+                     data-index="{{index}}"/>
+              <view class="delete-icon" 
+                    bindtap="deletePhoto" 
+                    data-index="{{index}}">×</view>
+            </view>
+          </block>
+          <!-- 添加照片按钮（数量未满时显示） -->
+          <view class="add-photo" 
+                bindtap="chooseImage" 
+                wx:if="{{photos.length < maxPhotos}}">
+             <!-- 使用 SVG 图标 -->
+            <image src="/assets/images/icon-add-photo.svg" mode="aspectFit" /> 
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view> 

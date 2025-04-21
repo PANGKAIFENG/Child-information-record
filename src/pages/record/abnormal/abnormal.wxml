@@ -1,0 +1,124 @@
+<view class="container">
+  <!-- 头部导航 -->
+  <view class="header">
+    <text class="nav-btn cancel-btn" bindtap="cancelRecord">取消</text>
+    <text class="page-title">异常记录</text>
+    <text wx:if="{{isViewMode}}" class="nav-btn edit-btn" bindtap="handleEdit">编辑</text>
+    <text wx:else class="nav-btn save-btn" bindtap="saveRecord">保存</text>
+  </view>
+
+  <!-- 修改：将表单内容放入 scroll-view -->
+  <scroll-view scroll-y class="form-scroll">
+    <!-- 保留 form-container 作为内边距和背景的容器 -->
+    <view class="form-container">
+      <!-- 异常类型选择 -->
+      <view class="form-item">
+        <view class="form-label">异常类型 (可多选)</view>
+        <!-- 使用 checkbox-group 实现多选 -->
+        <checkbox-group class="type-options-group" bindchange="onTypeChange" disabled="{{isViewMode}}">
+          <label class="type-option-label {{isViewMode ? 'disabled' : ''}}" wx:for="{{abnormalTypes}}" wx:key="value">
+            <checkbox class="type-checkbox" value="{{item.value}}" checked="{{item.checked}}" disabled="{{isViewMode}}"/>
+            <text class="type-name">{{item.name}}</text>
+          </label>
+        </checkbox-group>
+        <!-- 当 '其它' 被选中时显示输入框 -->
+        <input 
+          wx:if="{{showOtherInput}}" 
+          class="other-input" 
+          placeholder="请输入具体异常情况" 
+          bindinput="onOtherInputChange" 
+          value="{{otherTypeDescription}}"
+          maxlength="50"
+          disabled="{{isViewMode}}"
+        />
+      </view>
+
+      <!-- 体温记录 -->
+      <view class="form-item">
+        <view class="form-label">体温记录</view>
+        <view class="temperature-input">
+          <view class="temp-adjust-btn {{isViewMode ? 'disabled' : ''}}" 
+                bindtap="{{isViewMode ? '' : 'adjustTemperature'}}" 
+                data-action="decrease">-</view>
+          <input class="temp-value" 
+                 type="digit" 
+                 value="{{temperature}}" 
+                 bindinput="inputTemperature" 
+                 disabled="{{isViewMode}}"/>
+          <text class="temp-unit">℃</text>
+          <view class="temp-adjust-btn {{isViewMode ? 'disabled' : ''}}" 
+                bindtap="{{isViewMode ? '' : 'adjustTemperature'}}" 
+                data-action="increase">+</view>
+        </view>
+      </view>
+
+      <!-- 日期时间选择 -->
+      <view class="form-item">
+        <view class="form-label">记录时间</view>
+        <view class="datetime-section">
+          <picker mode="date" 
+                  value="{{date}}" 
+                  bindchange="bindDateChange" 
+                  class="date-picker" 
+                  disabled="{{isViewMode}}">
+            <view class="picker-view {{isViewMode ? 'disabled' : ''}}">{{date}}</view>
+          </picker>
+          <picker mode="time" 
+                  value="{{time}}" 
+                  bindchange="bindTimeChange" 
+                  class="time-picker" 
+                  disabled="{{isViewMode}}">
+            <view class="picker-view {{isViewMode ? 'disabled' : ''}}">{{time}}</view>
+          </picker>
+          <view class="now-btn {{isViewMode ? 'disabled' : ''}}" bindtap="{{isViewMode ? '' : 'setCurrentTime'}}">现在</view>
+        </view>
+      </view>
+
+      <!-- 照片上传 -->
+      <view class="form-item">
+        <view class="form-label">照片记录（最多9张）</view>
+        <view class="photo-uploader">
+          <view class="photo-list">
+            <block wx:for="{{photos}}" wx:key="*this">
+              <view class="photo-item">
+                <image src="{{item}}" 
+                       mode="aspectFill" 
+                       bindtap="previewImage" 
+                       data-index="{{index}}" />
+                <view wx:if="{{!isViewMode}}" 
+                      class="delete-icon" 
+                      bindtap="deleteImage" 
+                      data-index="{{index}}">×</view>
+              </view>
+            </block>
+            <view class="add-photo" 
+                  bindtap="chooseImage" 
+                  wx:if="{{!isViewMode && photos.length < 9}}">
+              <image src="/assets/images/icon-add-photo.svg" mode="aspectFit" />
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 备注 -->
+      <view class="form-item">
+        <view class="form-label">备注</view>
+        <view class="remark-container">
+          <textarea class="remark-input" 
+                    placeholder="{{isViewMode ? '' : '请输入备注信息（最多200字）'}}" 
+                    value="{{remarks}}" 
+                    bindinput="inputRemarks" 
+                    maxlength="200" 
+                    disabled="{{isViewMode}}"/>
+          <view class="remark-counter" wx:if="{{!isViewMode}}">{{remainingChars}}</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+  
+  <!-- 底部按钮 -->
+  <view class="button-group">
+    <view class="btn-cancel" bindtap="cancelRecord">取消</view>
+    <view class="btn-save {{isViewMode ? 'disabled' : ''}}" bindtap="{{isViewMode ? '' : 'saveRecord'}}">保存</view>
+  </view>
+</view> 

@@ -1,0 +1,61 @@
+<view class="container">
+  <!-- 头部导航 -->
+  <view class="header">
+    <view class="nav-btn cancel-btn" bindtap="cancelRecord">取消</view>
+    <view class="page-title">喂养记录</view>
+    <view class="nav-btn save-btn {{isFormValid ? '' : 'disabled'}}" bindtap="saveRecord">保存</view>
+  </view>
+
+  <view class="form-container">
+    <!-- 喂养类型选择 -->
+    <view class="form-item">
+      <text class="form-label">喂养类型</text>
+      <picker bindchange="bindTypeChange" value="{{selectedTypeIndex}}" range="{{feedingTypes}}">
+        <view class="picker-content">
+          <text>{{feedingTypes[selectedTypeIndex]}}</text>
+          <view class="dropdown-icon"></view>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 奶量 -->
+    <view class="form-item">
+      <text class="form-label">奶量 (ml)</text>
+      <view class="amount-input-container">
+        <input type="digit" value="{{amount}}" bindinput="inputAmount" placeholder="请输入奶量" />
+      </view>
+    </view>
+
+    <!-- 母乳喂养时长 (仅当选择母乳时显示) -->
+    <view class="form-item" wx:if="{{feedingTypes[selectedTypeIndex] === '母乳'}}">
+      <text class="form-label">喂养时长 (分钟)</text>
+      <view class="amount-input-container">
+        <input type="digit" value="{{duration}}" bindinput="inputDuration" placeholder="请输入喂养时长" />
+      </view>
+    </view>
+
+    <!-- 时间选择 -->
+    <view class="form-item">
+      <text class="form-label">日期和时间</text>
+      <view class="datetime-container">
+        <picker mode="date" value="{{date}}" bindchange="bindDateChange">
+          <view class="date-picker">
+            <text>{{date}}</text>
+          </view>
+        </picker>
+        
+        <picker mode="time" value="{{time}}" bindchange="bindTimeChange">
+          <view class="time-picker">
+            <text>{{time}}</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="form-item">
+      <text class="form-label">备注</text>
+      <textarea class="note-input" placeholder="添加备注..." value="{{notes}}" bindinput="inputNotes"></textarea>
+    </view>
+  </view>
+</view> 

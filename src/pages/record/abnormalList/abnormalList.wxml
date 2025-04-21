@@ -1,0 +1,50 @@
+<view class="container">
+  <!-- 筛选/排序区域 (后续添加) -->
+  <!-- <view class="filter-sort-section">
+    <text>筛选/排序功能待添加</text>
+  </view> -->
+
+  <!-- 记录列表 -->
+  <scroll-view scroll-y class="record-list-scroll">
+    <view wx:if="{{ recordList.length === 0 }}" class="empty-list-tip">
+      <image class="empty-icon" src="/assets/images/icon-empty.svg" mode="aspectFit"></image>
+      <text>暂无异常记录</text>
+    </view>
+
+    <view wx:else class="record-list">
+      <view class="record-item" 
+            wx:for="{{ recordList }}" 
+            wx:key="recordId" 
+            bindtap="goToDetail" 
+            data-id="{{item.recordId}}">
+        
+        <view class="record-header">
+          <text class="record-datetime">{{item.dateTime}}</text>
+          <text class="record-temp" wx:if="{{item.temperature}}">{{item.temperature}}℃</text>
+        </view>
+
+        <view class="record-types">
+          <text class="type-tag" wx:for="{{item.types}}" wx:key="*this" wx:for-item="typeName">{{typeName}}</text>
+          <text class="type-tag other-tag" wx:if="{{item.isOtherType}}">{{item.otherTypeDescription}}</text>
+        </view>
+
+        <view class="record-remarks" wx:if="{{item.remarks}}">
+          <text>备注: {{item.remarks}}</text>
+        </view>
+
+        <!-- 可以加一个指示箭头 -->
+        <image class="arrow-icon" src="/assets/images/arrow-right.png" mode="aspectFit"></image>
+
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 新增：悬浮按钮入口 -->
+  <view class="fab-add-record" bindtap="goToAddRecord">
+    <image src="/assets/images/icon-add.png" mode="aspectFit"></image> <!-- 假设有加号图标 -->
+  </view>
+
+  <!-- 可能需要一个返回按钮 -->
+  <!-- <button class="back-button" bindtap="navigateBack">返回</button> -->
+
+</view> 

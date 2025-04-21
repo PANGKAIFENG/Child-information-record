@@ -1,0 +1,134 @@
+/* src/pages/record/abnormalList/abnormalList.wxss */
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-page);
+}
+
+/* 筛选排序区域 (占位) */
+.filter-sort-section {
+  padding: 20rpx 30rpx;
+  background-color: var(--background-card);
+  border-bottom: 1rpx solid var(--border-color);
+  color: var(--text-placeholder);
+}
+
+/* 列表滚动区域 */
+.record-list-scroll {
+  flex: 1;
+  height: 0; /* 很重要，让 flex 生效 */
+}
+
+/* 空列表提示 */
+.empty-list-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 200rpx;
+  color: var(--text-placeholder);
+}
+
+.empty-icon {
+  width: 150rpx;
+  height: 150rpx;
+  margin-bottom: 20rpx;
+}
+
+/* 记录列表 */
+.record-list {
+  padding: 20rpx 30rpx;
+}
+
+.record-item {
+  background-color: var(--background-card);
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+  padding: 25rpx;
+  position: relative;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15rpx;
+}
+
+.record-datetime {
+  font-size: 28rpx;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.record-temp {
+  font-size: 28rpx;
+  color: var(--danger-color); /* 用醒目的颜色表示体温 */
+}
+
+.record-types {
+  margin-bottom: 10rpx;
+}
+
+.type-tag {
+  display: inline-block;
+  background-color: var(--background-tag); /* 标签背景色 */
+  color: var(--text-secondary);
+  font-size: 24rpx;
+  padding: 5rpx 15rpx;
+  border-radius: 20rpx;
+  margin-right: 10rpx;
+  margin-bottom: 10rpx;
+}
+
+.type-tag.other-tag {
+  background-color: var(--warn-bg-color); /* '其它'类型用不同背景 */
+  color: var(--warn-color);
+}
+
+.record-remarks {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-top: 10rpx;
+}
+
+.arrow-icon {
+  position: absolute;
+  right: 25rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24rpx;
+  height: 24rpx;
+  opacity: 0.5;
+}
+
+/* 返回按钮 (如果需要) */
+.back-button {
+  margin: 30rpx;
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+/* 新增：悬浮按钮样式 */
+.fab-add-record {
+  position: fixed; /* 固定定位 */
+  right: 40rpx;    /* 距离右边 */
+  bottom: 100rpx;  /* 距离底部 (根据需要调整，避开 tabBar) */
+  width: 100rpx;   /* 按钮宽度 */
+  height: 100rpx;  /* 按钮高度 */
+  background-color: var(--primary-color); /* 使用主题色 */
+  border-radius: 50%; /* 圆形 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.2); /* 添加阴影 */
+  z-index: 10; /* 确保在其他元素之上 */
+}
+
+.fab-add-record image {
+  width: 50rpx; /* 图标大小 */
+  height: 50rpx;
+} 

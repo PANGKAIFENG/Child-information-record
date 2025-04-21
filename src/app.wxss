@@ -1,0 +1,49 @@
+/* 全局颜色变量 */
+page {
+  --primary-color: #FF6B6B;       /* 主题色 - 原为 #3cc51f */
+  --danger-color: #ff4d4d;        /* 危险/结束红 - 用于结束睡眠等 */
+  --save-color: #FF6B6B;         /* 保存按钮红 - 与主题色统一 */
+  --cancel-color: #999;         /* 取消按钮灰 (文本) */
+  --cancel-bg-color: #F3F4F6;    /* 取消按钮背景灰 (按钮) */
+  --text-primary: #333;          /* 主要文字 - 深黑 */
+  --text-secondary: #666;        /* 次要文字 - 中灰 */
+  --text-placeholder: #bbb;      /* 占位文字 - 浅灰 */
+  --border-color: #eee;         /* 边框颜色 */
+  --background-page: #f5f5f5;   /* 页面背景灰 */
+  --background-card: #fff;      /* 卡片/表单项背景白 */
+  --background-input: #f8f8f8;  /* 输入框/选择器背景 */
+}
+
+/* 全局样式 */
+page {
+  background-color: var(--background-page);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  font-size: 16px; /* 可以设置一个基础字号 */
+  min-height: 100vh;
+}
+
+/* 通用样式 */
+.text-center {
+  text-align: center;
+}
+
+.margin-top {
+  margin-top: 20px;
+}
+
+.padding {
+  padding: 10px;
+}
+
+/* 可以在这里添加一些全局的重置样式或通用样式 */
+/* 例如 */
+view,
+text,
+input,
+textarea,
+picker {
+  box-sizing: border-box; /* 统一盒子模型 */
+}
+
+/* 可以在这里统一定义按钮的基础样式，但要小心覆盖 */ 

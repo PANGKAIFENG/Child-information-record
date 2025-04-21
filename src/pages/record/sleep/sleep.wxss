@@ -1,0 +1,286 @@
+/* 睡眠记录页面样式 */
+.container {
+  background-color: var(--background-card);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background-color: var(--background-card);
+  border-bottom: 1rpx solid var(--border-color);
+}
+
+.back-btn {
+  position: absolute;
+  left: 15px;
+  font-size: 14px;
+  color: #666;
+}
+
+.back-btn image {
+  width: 100%;
+  height: 100%;
+}
+
+.page-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: center;
+  flex: 1;
+}
+
+/* 修改后的导航按钮样式 */
+.nav-btn {
+  font-size: 30rpx;
+  padding: 10rpx 0;
+  min-width: 80rpx;
+  text-align: center;
+  background: none !important;
+  border: none !important;
+  color: var(--primary-color);
+  line-height: normal;
+  border-radius: 0;
+  margin: 0;
+}
+
+.cancel-btn {
+  color: var(--cancel-color) !important;
+  text-align: left;
+}
+
+.save-btn {
+  color: var(--primary-color) !important;
+  text-align: right;
+}
+
+.save-btn.disabled {
+  color: var(--text-placeholder) !important;
+  opacity: 1;
+}
+
+/* 记录方式切换 */
+.mode-switch {
+  display: flex;
+  justify-content: center;
+  margin: 0 20px 15px;
+  background-color: var(--background-page);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mode-item {
+  flex: 1;
+  text-align: center;
+  padding: 12px 0;
+  transition: all 0.3s ease;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.mode-item.active {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.form-container {
+  flex: 1;
+  padding: 0 20px;
+}
+
+.form-item {
+  margin-bottom: 30px;
+}
+
+.form-label {
+  font-size: 16px;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  display: block;
+  font-weight: 500;
+}
+
+/* 计时器样式 */
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 50px 0;
+  width: 100%;
+}
+
+.timer-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.timer-text {
+  font-size: 36px;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+}
+
+.timer-status {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* 睡眠时长显示 */
+.sleep-duration-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0 30px;
+}
+
+.duration-label {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.duration-value {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--save-color);
+}
+
+.timer-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* 开始睡眠按钮 - 圆形 */
+.start-sleep-btn {
+  width: 120px;
+  height: 120px;
+  border-radius: 60px;
+  background-color: #ff6b81;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(255, 107, 129, 0.3);
+  border: none;
+  margin: 0 auto;
+}
+
+.start-sleep-btn:active {
+  filter: brightness(0.9);
+}
+
+/* 结束睡眠按钮 */
+.end-sleep-btn {
+  width: 160px;
+  height: 50px;
+  border-radius: 25px;
+  background-color: var(--danger-color);
+  color: #fff;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(255, 77, 77, 0.3);
+  border: none;
+}
+
+.end-sleep-btn:active {
+  filter: brightness(0.9);
+}
+
+/* 其他计时器按钮 */
+.timer-btn {
+  margin: 0 10px;
+  padding: 12px 0;
+  width: 120px;
+  border-radius: 25px;
+  font-size: 16px;
+  border: none;
+}
+
+.timer-btn.reset {
+  background-color: var(--cancel-bg-color);
+  color: var(--text-secondary);
+}
+
+.timer-btn.resume {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+/* 时间选择器 */
+.time-picker-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.picker-content {
+  padding: 12px 0;
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.now-btn {
+  background-color: var(--primary-color);
+  color: #fff;
+  font-size: 15px;
+  padding: 12px 0 12px 15px;
+}
+
+/* 睡眠质量选择 */
+.quality-selection {
+  display: flex;
+  justify-content: space-between;
+}
+
+.quality-item {
+  flex: 1;
+  text-align: center;
+  padding: 12px 0;
+  margin: 0 5px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  color: var(--text-secondary);
+}
+
+.quality-item.active {
+  background-color: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+
+/* 备注输入 */
+.note-input {
+  width: 100%;
+  height: 120px;
+  font-size: 16px;
+  padding: 12px;
+  box-sizing: border-box;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--background-input);
+  color: var(--text-primary);
+}
+
+/* 下拉图标样式 */
+.dropdown-icon {
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid var(--text-placeholder);
+  border-bottom: 2px solid var(--text-placeholder);
+  transform: rotate(45deg);
+} 

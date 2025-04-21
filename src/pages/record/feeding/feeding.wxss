@@ -1,0 +1,169 @@
+/* 喂养记录页面样式 */
+.container {
+  background-color: var(--background-card);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background-color: var(--background-card);
+  border-bottom: 1rpx solid var(--border-color);
+}
+
+.back-btn {
+  position: absolute;
+  left: 30rpx;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.back-btn image {
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.page-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: center;
+  flex: 1;
+}
+
+.nav-btn {
+  font-size: 30rpx;
+  padding: 10rpx 0;
+  min-width: 80rpx;
+  text-align: center;
+  background: none !important;
+  border: none !important;
+  color: var(--primary-color);
+  line-height: normal;
+}
+
+.header .cancel-btn {
+  color: var(--cancel-color) !important;
+  text-align: left;
+}
+
+.header .save-btn {
+  color: var(--primary-color) !important;
+  text-align: right;
+}
+
+.header .save-btn.disabled {
+  color: var(--text-placeholder) !important;
+  opacity: 1;
+}
+
+.form-container {
+  flex: 1;
+  padding: 30rpx;
+}
+
+.form-item {
+  margin-bottom: 30rpx;
+  background-color: var(--background-card);
+  padding: 30rpx;
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  margin-bottom: 20rpx;
+  display: block;
+  font-weight: normal;
+}
+
+/* 喂养类型选择器 */
+.picker-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--background-input);
+  padding: 0 20rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-radius: 8rpx;
+  border: none;
+  font-size: 30rpx;
+  color: var(--text-primary);
+}
+
+/* 下拉图标 */
+.dropdown-icon {
+  width: 16rpx;
+  height: 16rpx;
+  border-right: 3rpx solid var(--text-secondary);
+  border-bottom: 3rpx solid var(--text-secondary);
+  transform: rotate(45deg);
+}
+
+/* 奶量输入框 */
+.amount-input-container {
+  border: none;
+}
+
+.amount-input-container input {
+  height: 80rpx;
+  font-size: 30rpx;
+  padding: 0 20rpx;
+  background-color: var(--background-input);
+  border-radius: 8rpx;
+  color: var(--text-primary);
+}
+
+/* 时间选择 */
+.datetime-container {
+  display: flex;
+  align-items: center;
+}
+
+.date-picker, .time-picker {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  font-size: 30rpx;
+  color: var(--text-primary);
+  padding: 0 20rpx;
+  background-color: var(--background-input);
+  border-radius: 8rpx;
+}
+
+.time-picker {
+  margin-left: 20rpx;
+}
+
+.now-btn {
+  margin-left: 20rpx;
+  padding: 0 20rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  font-size: 26rpx;
+  color: #fff;
+  background-color: var(--primary-color);
+  border-radius: 8rpx;
+  text-align: center;
+}
+
+/* 备注输入 */
+.note-input {
+  width: 100%;
+  height: 200rpx;
+  font-size: 28rpx;
+  padding: 20rpx;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 8rpx;
+  background-color: var(--background-input);
+  color: var(--text-primary);
+} 

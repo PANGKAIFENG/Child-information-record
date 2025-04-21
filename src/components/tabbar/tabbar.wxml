@@ -1,0 +1,18 @@
+<view class="tabbar">
+  <view class="tab-item {{active === 'home' ? 'active' : ''}}" bindtap="switchTab" data-page="home">
+    <image src="../../assets/images/{{active === 'home' ? 'home_active' : 'home'}}.png" class="tab-icon"></image>
+    <text class="tab-text">首页</text>
+  </view>
+  <view class="tab-item {{active === 'statistics' ? 'active' : ''}}" bindtap="switchTab" data-page="statistics">
+    <image src="../../assets/images/{{active === 'statistics' ? 'statistics_active' : 'statistics'}}.png" class="tab-icon"></image>
+    <text class="tab-text">统计</text>
+  </view>
+  <view class="tab-item {{active === 'abnormal' ? 'active' : ''}}" bindtap="switchTab" data-page="abnormal">
+    <image src="../../assets/images/{{active === 'abnormal' ? 'abnormal_active' : 'abnormal'}}.png" class="tab-icon"></image>
+    <text class="tab-text">异常记录</text>
+  </view>
+  <view class="tab-item {{active === 'profile' ? 'active' : ''}}" bindtap="switchTab" data-page="profile">
+    <image src="../../assets/images/{{active === 'profile' ? 'profile_active' : 'profile'}}.png" class="tab-icon"></image>
+    <text class="tab-text">我的</text>
+  </view>
+</view>

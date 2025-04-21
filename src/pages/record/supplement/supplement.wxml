@@ -1,0 +1,69 @@
+<view class="container">
+  <!-- 头部导航 -->
+  <view class="header">
+    <view class="nav-btn cancel-btn" bindtap="onCancel">取消</view>
+    <view class="page-title">补给品记录</view>
+    <view class="nav-btn save-btn {{isFormValid ? '' : 'disabled'}}" bindtap="onSave">保存</view>
+  </view>
+
+  <!-- 表单内容 -->
+  <view class="form-container">
+    <!-- 补给品类型 -->
+    <view class="form-item">
+      <view class="form-label">补给品类型</view>
+      <picker bindchange="bindTypeChange" value="{{typeIndex}}" range="{{typeArray}}">
+        <view class="form-picker">
+          {{typeArray[typeIndex]}}
+          <view class="picker-arrow"></view>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 自定义类型 -->
+    <view class="form-item" wx:if="{{showCustomType}}">
+      <view class="form-label">自定义类型</view>
+      <input class="form-input" placeholder="请输入自定义补给品类型" value="{{customType}}" bindinput="onCustomTypeInput" />
+    </view>
+
+    <!-- 数量和单位 -->
+    <view class="form-item">
+      <view class="form-label">数量</view>
+      <view class="amount-control">
+        <view class="amount-btn decrease" bindtap="decreaseAmount">-</view>
+        <input class="amount-input" type="digit" value="{{amount}}" bindinput="onAmountInput" />
+        <view class="amount-btn increase" bindtap="increaseAmount">+</view>
+        
+        <picker class="unit-picker" bindchange="bindUnitChange" value="{{unitIndex}}" range="{{unitArray}}">
+          <view class="unit-text">{{unitArray[unitIndex]}}</view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- 日期和时间 -->
+    <view class="form-item">
+      <view class="form-label">日期和时间</view>
+      <view class="datetime-container">
+        <picker mode="date" value="{{currentDate}}" bindchange="bindDateChange">
+          <view class="date-picker">
+            <text>{{currentDate}}</text>
+          </view>
+        </picker>
+        
+        <picker mode="time" value="{{currentTime}}" bindchange="bindTimeChange">
+          <view class="time-picker">
+            <text>{{currentTime}}</text>
+          </view>
+        </picker>
+        
+        <view class="now-btn" bindtap="onNowButtonTap">现在</view>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="form-item">
+      <view class="form-label">备注</view>
+      <textarea class="form-textarea" placeholder="请输入备注信息（选填）" value="{{notes}}" bindinput="onNotesInput" maxlength="{{maxNoteLength}}" />
+      <view class="note-counter">{{notes.length}}/{{maxNoteLength}}</view>
+    </view>
+  </view>
+</view>

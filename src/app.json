@@ -1,0 +1,50 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/statistics/statistics",
+    "pages/abnormal/abnormal",
+    "pages/profile/profile",
+    "pages/record/feeding/feeding",
+    "pages/record/sleep/sleep",
+    "pages/record/excretion/excretion",
+    "pages/record/supplement/supplement"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "孩子发育信息记录",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#888888",
+    "selectedColor": "#ff6b81",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页",
+        "iconPath": "assets/images/home.png",
+        "selectedIconPath": "assets/images/home_active.png"
+      },
+      {
+        "pagePath": "pages/statistics/statistics",
+        "text": "统计",
+        "iconPath": "assets/images/statistics.png",
+        "selectedIconPath": "assets/images/statistics_active.png"
+      },
+      {
+        "pagePath": "pages/abnormal/abnormal",
+        "text": "异常记录",
+        "iconPath": "assets/images/abnormal.png",
+        "selectedIconPath": "assets/images/abnormal_active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/images/profile.png",
+        "selectedIconPath": "assets/images/profile_active.png"
+      }
+    ]
+  }
+} 

@@ -1,0 +1,81 @@
+<!--src/pages/my/my.wxml-->
+<view class="container">
+
+  <!-- 状态一：未登录 -->
+  <view wx:if="{{!isLoggedIn}}" class="login-container">
+    <!-- <image class="logo" src="/assets/images/logo.png" mode="aspectFit"></image> --> <!-- 移除 Logo -->
+    <view class="app-desc">记录宝宝成长的点点滴滴</view>
+    <button class="login-btn" type="primary" bindtap="handleLogin">微信用户一键登录</button>
+    <view class="features-preview">
+      <view class="feature-item">喂养记录</view>
+      <view class="feature-item">睡眠追踪</view>
+      <view class="feature-item">成长统计</view>
+      <view class="feature-item">更多...</view>
+    </view>
+  </view>
+
+  <!-- 状态二：已登录，未设置宝宝信息 -->
+  <view wx:elif="{{isLoggedIn && !isInfoSet}}" class="setup-container">
+    <view class="setup-title">请设置宝宝信息</view>
+    
+    <view class="form-item avatar-item">
+      <text class="form-label">宝宝头像</text>
+      <button class="avatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+        <image class="avatar" 
+               src="{{babyInfo.avatarUrl || '/src/assets/images/Avatar.png'}}" 
+               mode="aspectFill">
+        </image>
+      </button>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">宝宝昵称</text>
+      <input class="form-input" 
+             type="nickname" 
+             placeholder="请输入昵称" 
+             bindinput="onNameInput" 
+             value="{{babyInfo.nickName}}"/>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">出生日期</text>
+      <picker mode="date" 
+              value="{{babyInfo.birthDate}}" 
+              bindchange="onDateChange" 
+              end="{{currentDate}}"> <!-- end 属性限制可选的最大日期 -->
+        <view class="picker-value">{{babyInfo.birthDate || '请选择日期'}}</view>
+      </picker>
+    </view>
+
+    <button class="save-btn" type="primary" bindtap="saveBabyInfo">保存信息</button>
+  </view>
+
+  <!-- 状态三：已登录，已设置宝宝信息 -->
+  <view wx:else class="profile-container">
+    <view class="profile-header">
+      <image class="avatar-display" src="{{babyInfo.avatarUrl || '/src/assets/images/Avatar.png'}}" mode="aspectFill"></image>
+      <view class="info-text">
+        <view class="baby-name">{{babyInfo.nickName}}</view>
+        <view class="baby-birthdate">生日: {{babyInfo.birthDate}}</view>
+        <!-- 可以增加年龄显示 -->
+        <!-- <view class="baby-age">年龄: {{babyAge}}</view> -->
+      </view>
+      <!-- 新增：编辑图标按钮 -->
+      <image class="edit-icon" src="/src/assets/images/edit-icon.png" mode="aspectFit" bindtap="editBabyInfo"></image>
+    </view>
+
+    <view class="action-list">
+      <!-- 移除旧的编辑按钮 -->
+      <!-- <button class="action-item" bindtap="editBabyInfo">编辑宝宝信息</button> -->
+      <!-- 退出登录按钮将移到下面 -->
+      <!-- <button class="action-item logout-btn" bindtap="handleLogout">退出登录</button> -->
+      <!-- 未来可以添加其他设置项 -->
+    </view>
+
+    <!-- 退出登录按钮移到容器底部 -->
+    
+  </view>
+  <!-- 退出登录按钮移到容器底部，但在登录状态下才显示 -->
+  <button wx:if="{{isLoggedIn}}" class="logout-btn-bottom" bindtap="handleLogout">退出登录</button>
+
+</view>
