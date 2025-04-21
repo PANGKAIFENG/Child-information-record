@@ -414,7 +414,7 @@ Page({
       case 'feeding':
         // 喂养记录使用 feedingType, amount 字段
         if (record.feedingType === '母乳') {
-          // 如果有amount字段，优先显示毫升，否则只显示"母乳"
+          // 如果有amount字段，显示毫升，否则只显示"母乳"
           if (record.amount) {
             return `${record.feedingType} ${record.amount}ml`;
           } else {

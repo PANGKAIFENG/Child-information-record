@@ -10,6 +10,12 @@ const _ = db.command; // 获取查询指令
 // 云函数入口函数
 exports.main = async (event, context) => {
   console.log('Executing getRecords cloud function. Event:', event);
+  
+  // 获取调用用户的openid
+  const wxContext = cloud.getWXContext();
+  const openid = wxContext.OPENID;
+  
+  console.log('Current user openid:', openid);
 
   try {
     // 查询 abnormal_records 集合
@@ -17,8 +23,8 @@ exports.main = async (event, context) => {
     // 未来可以根据 event 中传递的参数进行筛选或分页
     const queryResult = await abnormalRecordsCollection
       .where({
-        // 这里可以添加查询条件，例如根据用户 openid 查询
-        // _openid: event.userInfo.openId // 需要前端传递 userInfo
+        // 添加用户openid过滤，只返回当前用户的记录
+        _openid: openid
       })
       .orderBy('timestamp', 'desc') // 按时间戳降序排列
       // .skip(event.skip || 0) // 用于分页，跳过指定数量的记录
