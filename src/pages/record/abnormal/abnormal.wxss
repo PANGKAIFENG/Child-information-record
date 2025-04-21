@@ -250,51 +250,19 @@
   color: var(--text-primary);
 }
 
+/* 移除备注计数 */
 .remark-counter {
   position: absolute;
-  right: 20rpx;
-  bottom: 20rpx;
+  bottom: 10rpx;
+  right: 10rpx;
   font-size: 24rpx;
-  color: var(--text-secondary);
+  color: var(--text-placeholder);
 }
 
-/* 底部按钮组 */
-.button-group {
-  display: flex;
-  justify-content: space-between;
-  padding: 30rpx;
-  background-color: var(--background-card);
-  border-top: 1rpx solid var(--border-color);
-}
-
-.btn-cancel, .btn-save {
-  width: 48%;
-  height: 88rpx;
-  line-height: 88rpx;
-  text-align: center;
-  font-size: 32rpx;
-  border-radius: 8rpx;
-}
-
-.btn-cancel {
-  background-color: var(--cancel-bg-color);
-  color: var(--text-secondary);
-}
-
-.btn-save {
-  background-color: var(--save-color);
-  color: #fff;
-}
-
-.btn-save[disabled] {
-  opacity: 0.7;
-  color: #fff;
-}
-
-/* 为禁用状态添加通用样式 */
+/* 查看模式下的禁用样式 */
 .disabled {
-  opacity: 0.6; /* 降低透明度 */
-  pointer-events: none; /* 阻止点击事件 */
+  opacity: 0.6 !important;
+  pointer-events: none !important;
 }
 
 /* 特别针对 picker 的禁用视图 */

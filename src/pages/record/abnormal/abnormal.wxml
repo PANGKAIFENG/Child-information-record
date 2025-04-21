@@ -116,9 +116,5 @@
     </view>
   </scroll-view>
   
-  <!-- 底部按钮 -->
-  <view class="button-group">
-    <view class="btn-cancel" bindtap="cancelRecord">取消</view>
-    <view class="btn-save {{isViewMode ? 'disabled' : ''}}" bindtap="{{isViewMode ? '' : 'saveRecord'}}">保存</view>
-  </view>
+  <!-- 底部按钮 - 已移除，使用顶部导航按钮 -->
 </view> 
