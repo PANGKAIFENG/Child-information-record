@@ -115,7 +115,7 @@ Page({
   },
 
   /**
-   * 处理登录按钮点击 (修改为调用云函数)
+   * 处理登录按钮点击 (修改为调用云函数，并检查用户信息)
    */
   handleLogin() {
     console.log('Login button clicked');
@@ -137,26 +137,13 @@ Page({
         try {
           wx.setStorageSync('isLoggedIn', true);
           wx.setStorageSync('openid', openid);
-          // wx.setStorageSync('isInfoSet', false); // 登录后强制重新设置信息，先不清空旧的信息设置状态
-          // wx.removeStorageSync('babyInfo'); // 登录后强制重新设置信息，先不清空旧宝宝信息
           console.log('登录状态和 openid 已保存到本地缓存');
         } catch (e) {
           console.error('保存登录状态到本地缓存失败:', e);
         }
 
-        // 更新页面状态，进入信息设置界面，并设置默认值
-        this.setData({ 
-          isLoggedIn: true, 
-          isInfoSet: false, 
-          babyInfo: { // 直接设置包含默认头像的对象
-              avatarUrl: DEFAULT_AVATAR, 
-              nickName: DEFAULT_NICKNAME, 
-              birthDate: formatDate(new Date())
-          }
-        }); 
-        // 同时清除可能存在的旧缓存，确保用户看到的是默认设置界面
-        try { wx.removeStorageSync('isInfoSet'); wx.removeStorageSync('babyInfo'); } catch(e){} 
-
+        // 检查用户是否已设置过信息
+        this.checkUserInfo(openid);
       } else {
         // 获取 openid 失败
         console.error('云函数 login 返回失败或缺少 openid:', res.result);
@@ -172,8 +159,77 @@ Page({
       // 隐藏加载提示
       wx.hideLoading();
     });
+  },
 
-    // --- 移除模拟登录逻辑 ---
+  /**
+   * 新增：检查用户是否已设置过信息
+   * @param {string} openid - 用户的openid
+   */
+  checkUserInfo(openid) {
+    // 从云数据库中查询用户信息
+    const db = wx.cloud.database();
+    db.collection('users')
+      .where({ _openid: openid })
+      .get()
+      .then(res => {
+        if (res.data && res.data.length > 0 && res.data[0].babyInfo) {
+          const userBabyInfo = res.data[0].babyInfo;
+          // 检查信息是否完整
+          if (userBabyInfo.nickName && userBabyInfo.birthDate && userBabyInfo.avatarUrl) {
+            console.log('用户已有完整信息，直接加载:', userBabyInfo);
+            
+            // 保存用户信息到本地缓存
+            wx.setStorageSync('babyInfo', userBabyInfo);
+            wx.setStorageSync('isInfoSet', true);
+            
+            // 更新页面状态
+            this.setData({
+              isLoggedIn: true,
+              isInfoSet: true,
+              babyInfo: userBabyInfo
+            });
+            
+            wx.showToast({ title: '登录成功', icon: 'success' });
+          } else {
+            // 信息不完整，进入设置界面
+            console.log('用户信息不完整，需要设置');
+            this.setData({ 
+              isLoggedIn: true, 
+              isInfoSet: false,
+              babyInfo: {
+                avatarUrl: userBabyInfo.avatarUrl || DEFAULT_AVATAR,
+                nickName: userBabyInfo.nickName || DEFAULT_NICKNAME,
+                birthDate: userBabyInfo.birthDate || formatDate(new Date())
+              }
+            });
+          }
+        } else {
+          // 未找到用户信息，进入设置界面
+          console.log('未找到用户信息，需要设置');
+          this.setData({ 
+            isLoggedIn: true, 
+            isInfoSet: false, 
+            babyInfo: { 
+              avatarUrl: DEFAULT_AVATAR, 
+              nickName: DEFAULT_NICKNAME, 
+              birthDate: formatDate(new Date())
+            }
+          });
+        }
+      })
+      .catch(err => {
+        console.error('查询用户信息失败:', err);
+        // 出错时也进入设置界面
+        this.setData({ 
+          isLoggedIn: true, 
+          isInfoSet: false, 
+          babyInfo: { 
+            avatarUrl: DEFAULT_AVATAR, 
+            nickName: DEFAULT_NICKNAME, 
+            birthDate: formatDate(new Date())
+          }
+        });
+      });
   },
 
   /**
