@@ -161,43 +161,33 @@ Page({
       feedingType: currentFeedType,
       amount: parseFloat(this.data.amount) || null, // 确保未输入时为 null 或处理
       unit: 'ml', // 默认单位
-      date: this.data.date, // 用户选择的日期 YYYY-MM-DD
-      time: this.data.time, // 用户选择的时间 HH:mm
+      // date: this.data.date, // 不再单独发送 date
+      // time: this.data.time, // 不再单独发送 time
+      dateTime: `${this.data.date} ${this.data.time}`, // 新增合并后的 dateTime 字段
       notes: this.data.notes,
-      // createTime: new Date(), // 由云函数自动添加服务器时间
-      // timestamp: new Date().getTime(), // 可以由云函数添加或前端直接用 Date
-      
-      // --- 新增：直接传递本地日期字符串 --- 
-      recordDate_local: this.data.date // 使用用户选择的日期作为本地日期字符串
-      // --- 结束新增 ---
+      // createTime 和 timestamp 由云函数添加
+      // recordDate_local 由云函数从 dateTime 提取
     };
 
-    // --- 新增/修改：母乳喂养可能没有 amount，但可能有 duration ---
+    // --- 处理母乳的时长 --- 
     if (currentFeedType === '母乳') {
-      // 修改：保留amount字段，无论是否有值
-      // 如果未填amount但有duration，可以考虑转换（按需使用）
-      
-      // 确保amount字段有值
+      // 确保amount字段有值 (如果未填amount但有duration，可选转换)
       if (!recordData.amount && this.data.duration) {
-        // 可选：如果有时长没有奶量，可以用公式估算
-        // 例如：每分钟约10ml，这里可以自定义准确的换算公式
-        recordData.amount = parseFloat(this.data.duration) * 10;
+        recordData.amount = parseFloat(this.data.duration) * 10; 
       }
-      
       // 保存时长字段（如果有）
       recordData.duration = parseFloat(this.data.duration) || null;
     } else if (currentFeedType === '奶粉') {
       // 奶粉喂养不需要 duration
-      delete recordData.duration;
-      
+      // delete recordData.duration; // 如果 recordData 从空对象开始，则不需要删除
       // 确保奶粉记录存在amount字段
-      if (!recordData.amount) {
-        recordData.amount = 0; // 默认值，避免空值
+      if (recordData.amount === null) { // 修改检查条件为 null
+        recordData.amount = 0; // 默认值，避免 null
       }
     }
-    // --- 结束修改 ---
-    
-    console.log('[saveRecord] Data to be sent to cloud:', recordData); // 添加日志
+    // --------------------
+
+    console.log('[Feeding Save] Data sent to addRecord:', JSON.stringify(recordData));
 
     // 保存本次的喂养类型作为下次默认值
     wx.setStorageSync('lastFeedType', currentFeedType);
@@ -206,8 +196,8 @@ Page({
     wx.cloud.callFunction({
       name: 'addRecord',
       data: {
-        collectionName: 'feeding_records', // 指定要保存到的集合
-        recordData: recordData        // 传递记录数据
+        collectionName: 'feeding_records',
+        recordData: recordData
       }
     })
     .then(res => {

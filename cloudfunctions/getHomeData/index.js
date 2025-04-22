@@ -121,12 +121,18 @@ exports.main = async (event, context) => {
   console.log(`[getHomeData] Received request for openid: ${openid}`);
 
   try {
-    // --- 1. 获取今日统计 (使用组合索引) ---
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = (today.getMonth() + 1).toString().padStart(2, '0');
-    const day = today.getDate().toString().padStart(2, '0');
+    // --- 1. 获取今日统计 (使用用户时区，假设为 UTC+8) ---
+    const now = new Date(); // 当前 UTC 时间
+    const timezoneOffsetHours = 8; // 假设用户时区为 UTC+8
+    // 计算用户时区的当前时间
+    const userTime = new Date(now.getTime() + timezoneOffsetHours * 60 * 60 * 1000);
+
+    // 从调整后的时间获取 UTC 年月日 (因为 Date 对象内部是 UTC)
+    const year = userTime.getUTCFullYear();
+    const month = (userTime.getUTCMonth() + 1).toString().padStart(2, '0');
+    const day = userTime.getUTCDate().toString().padStart(2, '0');
     const todayDateStr = `${year}-${month}-${day}`;
+    console.log(`[getHomeData] Current UTC time: ${now.toISOString()}, Adjusted User Time (UTC+${timezoneOffsetHours}): ${userTime.toISOString()}, Querying stats for date: ${todayDateStr}`); // 记录查询日期及计算过程
 
     const statsPromises = [
       // 查询今日喂养记录
@@ -147,6 +153,7 @@ exports.main = async (event, context) => {
     const feedingResult = statsResults[0].data;
     const sleepResult = statsResults[1].data;
     const excretionResult = statsResults[2].data;
+    console.log('[getHomeData] Stats query results:', { feeding: feedingResult.length, sleep: sleepResult.length, excretion: excretionResult.length }); // 记录查询结果数量
 
     // 在云端计算今日统计
     const feedingCount = feedingResult.length;
@@ -183,8 +190,8 @@ exports.main = async (event, context) => {
     };
     console.log(`[getHomeData] Calculated todayStats:`, todayStats);
 
-    // --- 2. 获取最近记录 (使用组合索引) ---
-    const MAX_RECENT_RECORDS = 5; // 与前端保持一致或按需调整
+    // --- 2. 获取最近记录 ---
+    const MAX_RECENT_RECORDS = 5;
     const recordTypes = [
       { collection: 'feeding_records', type: 'feeding' },
       { collection: 'sleep_records', type: 'sleep' },
@@ -206,37 +213,64 @@ exports.main = async (event, context) => {
      recentResults.forEach((res, index) => {
         const recordTypeInfo = recordTypes[index];
         res.data.forEach(record => {
+          console.log('[getHomeData] Processing recent record raw data:', JSON.stringify(record)); // 记录原始数据
           try {
-            // 调用迁移过来的格式化函数
-            const formattedTime = formatRecordTime(record.createTime || record.timestamp); // 尝试用 timestamp 作为备用
+            // 记录格式化时间使用的来源
+            const timeSourceValue = record.dateTime || record.createTime || record.timestamp;
+            const timeSourceField = record.dateTime ? 'dateTime' : (record.createTime ? 'createTime' : (record.timestamp ? 'timestamp' : 'none'));
+            console.log(`[getHomeData] Formatting time for record ${record._id} using source: ${timeSourceField}, value:`, timeSourceValue);
+            const formattedTime = formatRecordTime(timeSourceValue);
+            
             const formattedDetail = formatRecordDetail(recordTypeInfo.type, record);
             
-            let createTimestamp = 0;
-            if (record.createTime) {
-              if (record.createTime instanceof Date) {
-                  createTimestamp = record.createTime.getTime();
-              } else if (typeof record.createTime === 'string') {
-                  createTimestamp = new Date(record.createTime).getTime();
-              } else if (typeof record.createTime === 'number') {
-                  createTimestamp = record.createTime;
-              } else if (record.createTime.$date) {
-                  createTimestamp = new Date(record.createTime.$date).getTime();
+            // --- 获取用于排序的时间戳 - 优先使用 dateTime ---
+            let sortTimestamp = 0; 
+            let sourceField = 'none';
+            if (record.dateTime) {
+              try {
+                // 尝试将 dateTime (YYYY-MM-DD HH:mm) 转换为时间戳
+                sortTimestamp = new Date(record.dateTime.replace(/-/g, '/')).getTime(); // 兼容 iOS
+                sourceField = 'dateTime';
+              } catch (parseErr) {
+                 console.warn(`[getHomeData] Failed to parse dateTime for sorting: ${record.dateTime}`, parseErr);
               }
-            } else if (record.timestamp) {
-              createTimestamp = record.timestamp;
             }
-
-            // 如果解析后仍然无效，则置为0
-            if (isNaN(createTimestamp)) {
-                createTimestamp = 0;
+            // 如果 dateTime 无效或不存在，尝试 createTime
+            if (isNaN(sortTimestamp) || sortTimestamp === 0) {
+              if (record.createTime) {
+                 if (record.createTime instanceof Date) {
+                    sortTimestamp = record.createTime.getTime();
+                    sourceField = 'createTime (Date)';
+                 } else if (typeof record.createTime === 'number') {
+                    sortTimestamp = record.createTime;
+                    sourceField = 'createTime (number)';
+                 } else if (record.createTime.$date) {
+                    sortTimestamp = new Date(record.createTime.$date).getTime();
+                    sourceField = 'createTime ($date)';
+                 }
+              }
             }
+            // 如果 createTime 也无效，尝试 timestamp
+             if (isNaN(sortTimestamp) || sortTimestamp === 0) {
+               if (record.timestamp && typeof record.timestamp === 'number') {
+                  sortTimestamp = record.timestamp;
+                  sourceField = 'timestamp';
+               }
+            }
+            // 最终检查
+            if (isNaN(sortTimestamp)) {
+                console.warn(`[getHomeData] Could not get valid timestamp for record:`, record._id, `Source field tried: ${sourceField}`);
+                sortTimestamp = 0; // 无法获取有效时间戳，排序时放在最后
+            }
+            console.log(`[getHomeData] Calculated sortTimestamp for record ${record._id}: ${sortTimestamp} from source: ${sourceField}`); // 记录计算出的排序时间戳和来源
+            // ----------------------------------------
             
             allRecentRecords.push({
               _id: record._id,
               type: recordTypeInfo.type,
-              createTime: createTimestamp, // 存储时间戳用于排序
-              time: formattedTime, // 存储格式化后的时间字符串
-              detail: formattedDetail // 存储格式化后的详情字符串
+              sortTimestamp: sortTimestamp,
+              time: formattedTime,
+              detail: formattedDetail
             });
           } catch (formatError) {
              console.error(`[getHomeData] Error formatting recent record:`, formatError, record);
@@ -244,35 +278,25 @@ exports.main = async (event, context) => {
         });
       });
 
-
-    // 在云端排序 (根据原始时间戳)
-    allRecentRecords.sort((a, b) => {
-      return b.createTime - a.createTime; // 直接比较时间戳
-    });
-
-
+    allRecentRecords.sort((a, b) => b.sortTimestamp - a.sortTimestamp);
     const recentRecords = allRecentRecords.slice(0, MAX_RECENT_RECORDS);
-    console.log(`[getHomeData] Processed recentRecords:`, recentRecords.length);
+    console.log(`[getHomeData] Final recentRecords to send (count: ${recentRecords.length}):`, JSON.stringify(recentRecords)); // 记录最终发送的数据
 
-
-    // --- 3. 返回结果 --- 
+    // --- 3. 返回结果 ---
     return {
       success: true,
+      message: '首页数据获取成功',
       todayStats: todayStats,
-      recentRecords: recentRecords.map(r => ({
-        _id: r._id,
-        type: r.type,
-        time: r.time, // 返回格式化好的时间
-        detail: r.detail // 返回格式化好的详情
-      })) // 只返回前端需要的数据
+      recentRecords: recentRecords
     };
 
   } catch (error) {
     console.error('[getHomeData] Error executing function:', error);
+    console.error('[getHomeData] Error details:', { error: error }); // 记录 catch 到的错误详情
     return {
       success: false,
       message: '获取首页数据失败',
-      error: error.message, // 返回错误消息
+      error: error.message,
       todayStats: {},
       recentRecords: []
     };

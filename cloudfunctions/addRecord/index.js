@@ -66,31 +66,41 @@ exports.main = async (event, context) => {
       recordId: recordId     // 添加生成的 recordId
     };
     
-    // 确保记录中有 recordDate_local 字段
-    if (!dataToSave.recordDate_local && dataToSave.date) {
-      dataToSave.recordDate_local = dataToSave.date;
-      console.log('Added recordDate_local from date field:', dataToSave.recordDate_local);
+    // --- 提取日期部分用于 recordDate_local ---
+    if (recordData.dateTime && typeof recordData.dateTime === 'string') {
+      const datePart = recordData.dateTime.split(' ')[0];
+      console.log('[addRecord] Extracted datePart:', datePart, 'from dateTime:', recordData.dateTime); // 记录提取的日期部分
+      if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+        dataToSave.recordDate_local = datePart;
+        console.log('[addRecord] Added recordDate_local from dateTime:', dataToSave.recordDate_local);
+      } else {
+        console.warn('[addRecord] Failed to extract valid date from dateTime:', recordData.dateTime);
+      }
+    } else if (recordData.date && typeof recordData.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(recordData.date)) {
+       dataToSave.recordDate_local = recordData.date;
+       console.log('[addRecord] Added recordDate_local from date field:', dataToSave.recordDate_local);
+    } else {
+       console.warn('[addRecord] Cannot determine recordDate_local. Missing or invalid dateTime/date field in recordData:', recordData);
     }
+    // ------------------------------------
     
-    console.log('Final data to save:', dataToSave);
+    console.log('[addRecord] Final data to save:', JSON.stringify(dataToSave)); // 记录最终保存的数据
     
-    // 向指定集合中添加一条记录
     const addResult = await collection.add({
       data: dataToSave
     });
 
-    console.log('Record added successfully:', addResult);
+    console.log('[addRecord] Record added successfully:', addResult); // 记录成功结果
 
-    // 返回成功结果，包含新记录的 _id
     return {
       success: true,
       message: '记录添加成功',
-      recordId: addResult._id // 返回数据库自动生成的文档 ID
+      recordId: addResult._id
     };
 
   } catch (e) {
-    console.error(`Error adding record to ${collectionName}:`, e);
-    // 返回失败结果
+    console.error(`[addRecord] Error adding record to ${collectionName}:`, e); // 记录错误
+    console.error('[addRecord] Error details:', { collectionName, recordData, error: e }); // 记录导致错误的上下文
     return {
       success: false,
       message: '记录添加失败',
