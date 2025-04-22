@@ -17,7 +17,8 @@ function initChart(canvasId, ecComponent, option) {
       devicePixelRatio: dpr // new Add devicePixelRatio
     });
     canvas.setChart(chart);
-    chart.setOption(option);
+    // 在 setOption 时添加第二个参数 notMerge = true，强制替换配置
+    chart.setOption(option, true); 
     console.log(`Chart initialized for ${canvasId}`);
     return chart;
   });
@@ -36,7 +37,7 @@ Page({
     },
     
     timeDimensions: ['今天', '昨天', '本周', '本月'],
-    selectedDimensionIndex: 0,
+    selectedDimensionIndex: 2,
     startDate: '',
     endDate: '',
 
@@ -108,24 +109,23 @@ Page({
   loadAndProcessData: function (startDate, endDate) {
     wx.showLoading({ title: '加载中...' });
     
-    // 使用异步方式获取所有记录
-    getAllRecords().then(allRecords => {
-      // Filter records by the selected date range
-      const filteredRecords = allRecords.filter(record => {
-        // 确保日期格式一致用于比较
-        const recordDate = record.date;
-        return recordDate >= startDate && recordDate <= endDate;
-      });
+    // 调用修改后的 getAllRecords，传入日期范围
+    getAllRecords({ startDate, endDate }).then(allRecords => {
+      // 不再需要前端筛选，因为 getAllRecords 内部已经按日期范围查询了
+      // const filteredRecords = allRecords.filter(record => {
+      //   const recordDate = record.date;
+      //   return recordDate >= startDate && recordDate <= endDate;
+      // });
 
-      console.log(`[statistics] 过滤后符合条件的记录数量: ${filteredRecords.length}, 日期范围: ${startDate} 到 ${endDate}`);
+      // 直接使用 allRecords 进行处理
+      console.log(`[statistics] 获取到符合条件的记录数量: ${allRecords.length}, 日期范围: ${startDate} 到 ${endDate}`);
       
-      // 打印筛选后的记录样本，帮助调试
-      if (filteredRecords.length > 0) {
-        console.log('[statistics] 筛选后的第一条记录:', filteredRecords[0]);
+      if (allRecords.length > 0) {
+        console.log('[statistics] 第一条记录:', allRecords[0]);
       }
 
-      // Process data for charts and metrics
-      const processedData = this.processRecordsForStats(filteredRecords, startDate, endDate);
+      // Process data for charts and metrics using allRecords
+      const processedData = this.processRecordsForStats(allRecords, startDate, endDate);
 
       // Update core metrics display
       this.updateCoreMetrics(processedData.metrics);
@@ -258,24 +258,43 @@ Page({
   },
 
   renderCharts: function (chartData) {
+    // --- 添加调试日志 ---
+    console.log('[renderCharts] Received chartData:', chartData);
+    if (chartData && chartData.feeding) {
+      console.log('[renderCharts] Feeding xAxis:', chartData.feeding.xAxis, 'Length:', chartData.feeding.xAxis?.length);
+      console.log('[renderCharts] Feeding dataZoom condition met?', (chartData.feeding.xAxis?.length || 0) > 7);
+    }
+    if (chartData && chartData.sleep) {
+      console.log('[renderCharts] Sleep xAxis:', chartData.sleep.xAxis, 'Length:', chartData.sleep.xAxis?.length);
+      console.log('[renderCharts] Sleep dataZoom condition met?', (chartData.sleep.xAxis?.length || 0) > 7);
+    }
+    if (chartData && chartData.excretion) {
+      console.log('[renderCharts] Excretion xAxis:', chartData.excretion.xAxis, 'Length:', chartData.excretion.xAxis?.length);
+      console.log('[renderCharts] Excretion dataZoom condition met?', (chartData.excretion.xAxis?.length || 0) > 7);
+    }
+    // --- 调试日志结束 ---
+
     // Check if components are ready before initializing
     if (this.feedingChartComponent) {
         console.log("Initializing feeding chart...");
-        initChart('feeding-chart', this.feedingChartComponent, this.getFeedingOption(chartData.feeding));
+        // 传递 feeding 数据给 getFeedingOption
+        initChart('feeding-chart', this.feedingChartComponent, this.getFeedingOption(chartData.feeding)); 
     } else {
-        console.warn("Feeding chart component not ready.")
+        console.warn("Feeding chart component not ready.") // 加个点
     }
     if (this.sleepChartComponent) {
          console.log("Initializing sleep chart...");
-        initChart('sleep-chart', this.sleepChartComponent, this.getSleepOption(chartData.sleep));
+         // 传递 sleep 数据给 getSleepOption
+        initChart('sleep-chart', this.sleepChartComponent, this.getSleepOption(chartData.sleep)); 
     } else {
-         console.warn("Sleep chart component not ready.")
+         console.warn("Sleep chart component not ready.") // 加个点
     }
     if (this.excretionChartComponent) {
          console.log("Initializing excretion chart...");
-        initChart('excretion-chart', this.excretionChartComponent, this.getExcretionOption(chartData.excretion));
+         // 传递 excretion 数据给 getExcretionOption
+        initChart('excretion-chart', this.excretionChartComponent, this.getExcretionOption(chartData.excretion)); 
     } else {
-         console.warn("Excretion chart component not ready.")
+         console.warn("Excretion chart component not ready.") // 加个点
     }
   },
 
@@ -293,28 +312,10 @@ Page({
       grid: { 
         left: '10%', 
         right: '5%', 
-        bottom: '15%', 
+        bottom: '15%', // Adjust bottom spacing if needed after removing dataZoom
         top: '10%',
         containLabel: true 
       },
-      dataZoom: [
-        // 当数据超过7天时显示滚动条
-        data.xAxis.length > 7 ? {
-          type: 'slider',
-          show: true,
-          start: Math.max(0, 100 - (7/data.xAxis.length * 100)), // 默认显示最近7天
-          end: 100,
-          height: 15,
-          bottom: 0,
-          borderColor: 'transparent',
-          backgroundColor: '#f5f5f5',
-          fillerColor: 'rgba(255, 107, 129, 0.2)',
-          handleStyle: {
-            color: '#ff6b81',
-            borderColor: '#ff6b81'
-          }
-        } : {}
-      ],
       xAxis: { 
         type: 'category', 
         boundaryGap: false, 
@@ -386,10 +387,10 @@ Page({
     // 根据数据点数量动态调整柱子宽度 - 适应多天数据
     const barWidth = data.xAxis.length <= 7 ? '30%' : (data.xAxis.length <= 14 ? '20%' : '10%');
     
-    // 计算合适的初始显示范围
-    const visibleBars = Math.min(7, data.xAxis.length);
-    const startZoom = data.xAxis.length > visibleBars ? 
-      Math.max(0, 100 - (visibleBars/data.xAxis.length * 100)) : 0;
+    // 计算合适的初始显示范围 (不再需要，因为 dataZoom 移除)
+    // const visibleBars = Math.min(7, data.xAxis.length);
+    // const startZoom = data.xAxis.length > visibleBars ? 
+    //  Math.max(0, 100 - (visibleBars/data.xAxis.length * 100)) : 0;
     
     return {
       tooltip: { 
@@ -405,36 +406,10 @@ Page({
       grid: { 
         left: '8%', 
         right: '5%', 
-        bottom: data.xAxis.length > 7 ? '15%' : '10%', 
+        bottom: '10%', // Adjust bottom spacing if needed after removing dataZoom
         top: '5%',
         containLabel: true 
       },
-      dataZoom: [
-        // 当数据超过7天时显示滚动条
-        data.xAxis.length > visibleBars ? {
-          type: 'slider',
-          show: true,
-          start: startZoom, // 默认显示最近几天
-          end: 100,
-          height: 15,
-          bottom: 0,
-          borderColor: 'transparent',
-          backgroundColor: '#f5f5f5',
-          fillerColor: 'rgba(146, 164, 245, 0.2)',
-          handleStyle: {
-            color: '#8E9EFF',
-            borderColor: '#8E9EFF'
-          },
-          showDataShadow: false, // 不显示数据阴影，简化界面
-          showDetail: false,     // 不显示详细信息，减少视觉干扰
-          emphasis: {
-            handleStyle: {
-              shadowBlur: 5,
-              shadowColor: 'rgba(146, 164, 245, 0.5)'
-            }
-          }
-        } : {}
-      ],
       xAxis: { 
         type: 'category', 
         data: data.xAxis,
@@ -511,10 +486,10 @@ Page({
     // 根据数据点数量动态调整柱子宽度
     const barWidth = data.xAxis.length <= 7 ? '30%' : (data.xAxis.length <= 14 ? '20%' : '10%');
     
-    // 计算合适的初始显示范围
-    const visibleBars = Math.min(7, data.xAxis.length);
-    const startZoom = data.xAxis.length > visibleBars ? 
-      Math.max(0, 100 - (visibleBars/data.xAxis.length * 100)) : 0;
+    // 计算合适的初始显示范围 (不再需要，因为 dataZoom 移除)
+    // const visibleBars = Math.min(7, data.xAxis.length);
+    // const startZoom = data.xAxis.length > visibleBars ? 
+    //   Math.max(0, 100 - (visibleBars/data.xAxis.length * 100)) : 0;
     
     // 更美观的颜色
     const peeColor = {
@@ -550,7 +525,7 @@ Page({
       },
       legend: { 
         data: ['小便', '大便'], 
-        bottom: 25,
+        bottom: 10, // 调整 legend 位置，因为 dataZoom 移除了
         icon: 'roundRect',
         itemWidth: 10,
         itemHeight: 10,
@@ -560,30 +535,10 @@ Page({
       grid: { 
         left: '8%', 
         right: '5%', 
-        bottom: data.xAxis.length > 7 ? '20%' : '15%', 
+        bottom: '15%', // 调整 bottom spacing，留出空间给 legend
         top: '5%',
         containLabel: true 
       },
-      dataZoom: [
-        // 当数据超过指定天数时显示滚动条
-        data.xAxis.length > visibleBars ? {
-          type: 'slider',
-          show: true,
-          start: startZoom,
-          end: 100,
-          height: 15,
-          bottom: 30,
-          borderColor: 'transparent',
-          backgroundColor: '#f5f5f5',
-          fillerColor: 'rgba(146, 164, 245, 0.2)',
-          handleStyle: {
-            color: '#8E9EFF',
-            borderColor: '#8E9EFF'
-          },
-          showDataShadow: false, // 不显示数据阴影，简化界面
-          showDetail: false      // 不显示详细信息，减少视觉干扰
-        } : {}
-      ],
       xAxis: { 
         type: 'category', 
         data: data.xAxis,

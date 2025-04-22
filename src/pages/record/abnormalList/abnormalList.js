@@ -172,9 +172,9 @@ Page({
     const recordId = e.currentTarget.dataset.id;
     console.log('Navigate to detail for recordId:', recordId);
 
-    // --- 取消注释并确认路径 ---
+    // --- 使用绝对路径 ---
     wx.navigateTo({
-      url: `../abnormal/abnormal?id=${recordId}` // 使用相对路径
+      url: `/packages/record/abnormal/abnormal?id=${recordId}` // 更新为绝对路径
     });
   },
 
@@ -190,7 +190,7 @@ Page({
     
     console.log('Navigate to add abnormal record page.');
     wx.navigateTo({
-      url: '../abnormal/abnormal' // 使用相对路径
+      url: '/packages/record/abnormal/abnormal' // 更新为绝对路径
     });
   },
 

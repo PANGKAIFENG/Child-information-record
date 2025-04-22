@@ -1,4 +1,6 @@
-import { formatTime, formatDate } from '../../../utils/util.js'; // 假设有日期时间格式化工具
+// import { formatTime, formatDate } from '../utils/util.js'; // 注释掉旧的导入
+const app = getApp(); // 获取 App 实例
+const { formatTime, formatDate } = app.globalData.utils; // 从 globalData 获取工具函数
 
 Page({
   /**

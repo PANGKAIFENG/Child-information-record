@@ -1,6 +1,5 @@
 // pages/record/supplement/supplement.js
 const app = getApp();
-const util = require('../../../utils/util.js');
 
 Page({
   /**

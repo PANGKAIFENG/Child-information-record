@@ -2,14 +2,28 @@
   "pages": [
     "src/pages/home/home",
     "src/pages/statistics/statistics",
-    "src/pages/record/feeding/feeding",
-    "src/pages/record/sleep/sleep",
-    "src/pages/record/excretion/excretion",
-    "src/pages/record/supplement/supplement",
-    "src/pages/record/abnormal/abnormal",
     "src/pages/record/abnormalList/abnormalList",
-    "src/pages/my/my",
-    "src/pages/family/family"
+    "src/pages/my/my"
+  ],
+  "subpackages": [
+    {
+      "root": "packages/record",
+      "name": "record",
+      "pages": [
+        "feeding/feeding",
+        "sleep/sleep",
+        "excretion/excretion",
+        "supplement/supplement",
+        "abnormal/abnormal"
+      ]
+    },
+    {
+      "root": "packages/profile",
+      "name": "profile",
+      "pages": [
+        "family/family"
+      ]
+    }
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -51,6 +65,5 @@
   },
   "lazyCodeLoading": "requiredComponents",
   "sitemapLocation": "sitemap.json",
-  "style": "v2",
-  "libVersion": "2.25.3"
+  "style": "v2"
 } 

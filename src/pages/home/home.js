@@ -66,26 +66,24 @@ Page({
     if (userLoggedIn && storedBabyInfo) {
       // 如果已登录且缓存中有信息，则使用缓存信息
       currentBabyInfo = storedBabyInfo;
-      // 计算年龄
       if (currentBabyInfo.birthDate) {
         babyAge = calculateAge(currentBabyInfo.birthDate);
       }
-      // 确保头像有值（如果缓存是旧的空值，用默认）
       if (!currentBabyInfo.avatarUrl) {
-          currentBabyInfo.avatarUrl = DEFAULT_AVATAR;
+        currentBabyInfo.avatarUrl = DEFAULT_AVATAR;
       }
+      currentBabyInfo.age = babyAge; // 将此行移入 if 块
     } else {
       // 未登录或无信息，确保使用默认值
       currentBabyInfo = {
-          avatarUrl: DEFAULT_AVATAR,
-          nickName: '宝宝', // 或提示登录
-          birthDate: null,
-          age: '请先登录'
+        avatarUrl: DEFAULT_AVATAR,
+        nickName: '宝宝', // 或提示登录
+        birthDate: null,
+        age: '请先登录'
       };
+      // babyAge = ''; // 当未登录时，不需要这行，因为 age 已经设为 '请先登录'
     }
     
-    currentBabyInfo.age = babyAge; // 更新年龄
-
     this.setData({
       isLoggedIn: userLoggedIn,
       babyInfo: currentBabyInfo
@@ -98,8 +96,8 @@ Page({
     } else {
       // 未登录状态下清空或设置默认统计/记录
       this.setData({
-          todayStats: { feedingCount: '-', totalMilk: '-', sleepHours: '-', excretionCount: '-' },
-          recentRecords: [] 
+        todayStats: { feedingCount: '-', totalMilk: '-', sleepHours: '-', excretionCount: '-' },
+        recentRecords: [] 
       });
     }
   },
@@ -522,16 +520,16 @@ Page({
     let url = '';
     switch (recordType) {
       case 'feeding':
-        url = '/src/pages/record/feeding/feeding';
+        url = '/packages/record/feeding/feeding';
         break;
       case 'sleep':
-        url = '/src/pages/record/sleep/sleep';
+        url = '/packages/record/sleep/sleep';
         break;
       case 'excretion':
-        url = '/src/pages/record/excretion/excretion';
+        url = '/packages/record/excretion/excretion';
         break;
       case 'supplement':
-        url = '/src/pages/record/supplement/supplement';
+        url = '/packages/record/supplement/supplement';
         break;
       default:
         console.warn('Unknown record type:', recordType);

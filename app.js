@@ -1,3 +1,6 @@
+// 使用 require 导入工具函数
+const utils = require('/src/utils/util.js');
+
 App({
   onLaunch: function () {
     console.log('App Launch');
@@ -25,5 +28,8 @@ App({
   },
   onHide: function () {
     console.log('App Hide');
+  },
+  globalData: {
+    utils: utils // 将导入的 utils 模块挂载到 globalData
   }
 }) 
