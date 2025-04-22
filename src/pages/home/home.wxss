@@ -8,122 +8,138 @@
 /* 骨架屏样式 */
 .skeleton {
   padding: 15px;
-  box-sizing: border-box;
+  background-color: #fff; /* 骨架屏背景色 */
+  /* 覆盖页面内容的边距，如果需要的话 */
+  /* margin: 0;  */
 }
 
+/* 通用线条样式 */
 .skeleton-line {
-  background-color: #f0f0f0; /* 骨架屏基础灰色 */
-  border-radius: 4px;
-  height: 16px; /* 默认行高 */
-  width: 100%; /* 默认宽度 */
-  animation: skeleton-blink 1.2s ease-in-out infinite; /* 添加动画 */
+  background-color: #f0f0f0; /* 线条颜色 */
+  border-radius: 4px; /* 圆角 */
+  height: 12px; /* 默认高度 */
+  margin-bottom: 8px; /* 默认下边距 */
+}
+/* 闪烁动画效果（可选） */
+.skeleton-line, .skeleton-avatar, .skeleton-icon {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite linear;
+}
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
+/* 头部骨架 */
 .skeleton-header {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
 }
-
 .skeleton-avatar {
   width: 50px;
   height: 50px;
-  border-radius: 50%;
+  border-radius: 50%; /* 圆形头像 */
   background-color: #f0f0f0;
   margin-right: 15px;
-  animation: skeleton-blink 1.2s ease-in-out infinite;
 }
-
 .skeleton-user-text {
   flex: 1;
 }
-
-.skeleton-user-text .skeleton-line:last-child {
-  margin-top: 8px;
+.skeleton-line.name {
+  width: 60px; /* 模拟昵称宽度 */
+  height: 16px; /* 模拟昵称高度 */
+  margin-bottom: 8px;
+}
+.skeleton-line.age {
+  width: 100px; /* 模拟年龄/登录提示宽度 */
+  height: 12px;
+  margin-bottom: 0; /* 最后一行无下边距 */
 }
 
+/* 快捷入口骨架 */
 .skeleton-quick-access {
   display: flex;
   justify-content: space-around;
   margin-bottom: 25px;
+  padding: 10px 0;
+  background-color: #fff; /* 可以给背景色 */
+  border-radius: 8px; /* 可以加圆角 */
+  /* box-shadow: 0 2px 5px rgba(0,0,0,0.05); */ /* 可以加阴影 */
 }
-
-.skeleton-access-button {
-  width: 50px;
-  height: 70px; /* 大致模拟图标+文字 */
+.skeleton-access-item {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-/* 模拟按钮内部结构 */
-.skeleton-access-button::before {
-  content: '';
-  display: block;
-  width: 40px;
-  height: 40px;
+.skeleton-icon {
+  width: 35px;
+  height: 35px;
+  border-radius: 8px; /* 图标占位形状 */
   background-color: #f0f0f0;
-  border-radius: 8px;
   margin-bottom: 8px;
-  animation: skeleton-blink 1.2s ease-in-out infinite;
 }
-.skeleton-access-button::after {
-  content: '';
-  display: block;
-  width: 30px;
-  height: 12px;
-  background-color: #f0f0f0;
-   border-radius: 4px;
-   animation: skeleton-blink 1.2s ease-in-out infinite;
+.skeleton-line.label {
+  width: 40px; /* 标签文字宽度 */
+  height: 10px;
+  margin-bottom: 0;
 }
 
-
-.skeleton-overview,
-.skeleton-recent {
+/* 今日概览骨架 */
+.skeleton-overview {
   margin-bottom: 25px;
 }
-
-.skeleton-title-line {
-  height: 18px;
-  width: 100px;
-  background-color: #f0f0f0;
-  border-radius: 4px;
+.skeleton-line.title {
+  width: 80px; /* 标题宽度 */
+  height: 16px;
   margin-bottom: 15px;
-  animation: skeleton-blink 1.2s ease-in-out infinite;
 }
-
 .skeleton-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(2, 1fr); /* 两列 */
+  gap: 15px; /* 网格间距 */
 }
-
 .skeleton-grid-item {
-  /* 样式已通过内部的 skeleton-line 定义 */
+  /* 网格项样式 */
+}
+.skeleton-line.grid-label {
+  width: 70px; /* 标签宽度 */
+  height: 12px;
+  margin-bottom: 8px;
+}
+.skeleton-line.grid-value {
+  width: 50px; /* 数值宽度 */
+  height: 14px;
+  margin-bottom: 0;
 }
 
-.skeleton-grid-item .skeleton-line:last-child {
-  margin-top: 8px;
+/* 最近记录骨架 */
+.skeleton-recent {
+  /* */
 }
-
-
+/* .skeleton-line.title (复用上面的) */
 .skeleton-record-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #f5f5f5; /* 添加分隔线模拟列表项 */
+  padding: 12px 0;
+  border-bottom: 1px solid #f5f5f5; /* 分隔线 */
 }
-
+.skeleton-line.record-detail {
+  width: 75%; /* 详情宽度 */
+  height: 12px;
+  margin-bottom: 0;
+}
+.skeleton-line.record-detail.short { width: 60%; } /* 短一点的详情 */
+.skeleton-line.record-detail.medium { width: 70%; } /* 中等长度 */
+.skeleton-line.record-time {
+  width: 40px; /* 时间宽度 */
+  height: 12px;
+  margin-bottom: 0;
+}
 .skeleton-record-item:last-child {
-  border-bottom: none;
-}
-
-
-/* 简单的闪烁动画 */
-@keyframes skeleton-blink {
-  0% { opacity: 1; }
-  50% { opacity: 0.6; }
-  100% { opacity: 1; }
+  border-bottom: none; /* 最后一项无分隔线 */
 }
 
 /* -------- 骨架屏样式结束 -------- */

@@ -90,27 +90,26 @@ Page({
       babyInfo: currentBabyInfo
     });
 
-    // 在 onShow 中根据登录状态加载数据
     if (userLoggedIn) {
-      // --- 确保在数据加载完成后设置 contentLoaded --- 
       Promise.all([
         this.loadTodayStats(),
         this.loadRecentRecords()
       ]).then(() => {
-        // 所有数据加载完成（或失败并已处理）后，标记内容已加载
         console.log('[onShow] Data loading promises resolved.');
-        this.setData({ contentLoaded: true }); 
+        console.log('[onShow] Setting contentLoaded to true.');
+        this.setData({ contentLoaded: true });
       }).catch(err => {
-        // 即使加载失败，也应显示页面，但可能需要错误提示
         console.error('[onShow] Error loading data in Promise.all:', err);
-        this.setData({ contentLoaded: true }); // 仍然显示内容区域，但可能是空的或错误状态
+        console.log('[onShow] Setting contentLoaded to true after error.');
+        this.setData({ contentLoaded: true }); 
       });
     } else {
       // 未登录状态
+      console.log('[onShow] Setting contentLoaded to true for logged out user.');
       this.setData({
           todayStats: { feedingCount: '-', totalMilk: '-', sleepHours: '-', excretionCount: '-' },
           recentRecords: [],
-          contentLoaded: true // 未登录时也直接显示内容（空状态）
+          contentLoaded: true
       });
     }
   },
@@ -663,5 +662,5 @@ Page({
       console.error('计算年龄出错:', err);
       return '';
     }
-  }
+  },
 }) 

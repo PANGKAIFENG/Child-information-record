@@ -1,49 +1,70 @@
 <view class="container">
   <!-- 骨架屏 -->
   <view class="skeleton" wx:if="{{!contentLoaded}}">
+    <!-- 头部骨架 -->
     <view class="skeleton-header">
-      <view class="skeleton-avatar"></view>
+      <view class="skeleton-avatar"></view> <!-- 头像占位 -->
       <view class="skeleton-user-text">
-        <view class="skeleton-line" style="width: 60px;"></view>
-        <view class="skeleton-line" style="width: 80px; margin-top: 8px;"></view>
+        <view class="skeleton-line name"></view> <!-- 模拟昵称 -->
+        <view class="skeleton-line age"></view> <!-- 模拟年龄/登录提示 -->
       </view>
     </view>
+    <!-- 快捷入口骨架 -->
     <view class="skeleton-quick-access">
-      <view class="skeleton-access-button"></view>
-      <view class="skeleton-access-button"></view>
-      <view class="skeleton-access-button"></view>
-      <view class="skeleton-access-button"></view>
+      <view class="skeleton-access-item">
+        <view class="skeleton-icon"></view> <!-- 图标占位 -->
+        <view class="skeleton-line label"></view> <!-- 标签占位 -->
+      </view>
+      <view class="skeleton-access-item">
+        <view class="skeleton-icon"></view>
+        <view class="skeleton-line label"></view>
+      </view>
+      <view class="skeleton-access-item">
+        <view class="skeleton-icon"></view>
+        <view class="skeleton-line label"></view>
+      </view>
+      <view class="skeleton-access-item">
+        <view class="skeleton-icon"></view>
+        <view class="skeleton-line label"></view>
+      </view>
     </view>
+    <!-- 今日概览骨架 -->
     <view class="skeleton-overview">
-      <view class="skeleton-title-line"></view>
+      <view class="skeleton-line title"></view> <!-- 标题占位 -->
       <view class="skeleton-grid">
         <view class="skeleton-grid-item">
-          <view class="skeleton-line" style="width: 70px; height: 12px;"></view>
-          <view class="skeleton-line" style="width: 40px; margin-top: 8px;"></view>
+          <view class="skeleton-line grid-label"></view>
+          <view class="skeleton-line grid-value"></view>
         </view>
         <view class="skeleton-grid-item">
-          <view class="skeleton-line" style="width: 60px; height: 12px;"></view>
-          <view class="skeleton-line" style="width: 50px; margin-top: 8px;"></view>
-        </view>
-         <view class="skeleton-grid-item">
-          <view class="skeleton-line" style="width: 70px; height: 12px;"></view>
-          <view class="skeleton-line" style="width: 50px; margin-top: 8px;"></view>
+          <view class="skeleton-line grid-label"></view>
+          <view class="skeleton-line grid-value"></view>
         </view>
         <view class="skeleton-grid-item">
-          <view class="skeleton-line" style="width: 60px; height: 12px;"></view>
-          <view class="skeleton-line" style="width: 40px; margin-top: 8px;"></view>
+          <view class="skeleton-line grid-label"></view>
+          <view class="skeleton-line grid-value"></view>
+        </view>
+        <view class="skeleton-grid-item">
+          <view class="skeleton-line grid-label"></view>
+          <view class="skeleton-line grid-value"></view>
         </view>
       </view>
     </view>
+    <!-- 最近记录骨架 -->
     <view class="skeleton-recent">
-      <view class="skeleton-title-line"></view>
+      <view class="skeleton-line title"></view> <!-- 标题占位 -->
       <view class="skeleton-record-item">
-        <view class="skeleton-line" style="width: 80%;"></view>
-        <view class="skeleton-line" style="width: 30px;"></view>
+        <view class="skeleton-line record-detail"></view>
+        <view class="skeleton-line record-time"></view>
       </view>
       <view class="skeleton-record-item">
-        <view class="skeleton-line" style="width: 70%;"></view>
-        <view class="skeleton-line" style="width: 30px;"></view>
+        <view class="skeleton-line record-detail short"></view> <!-- 可以有长短变化 -->
+        <view class="skeleton-line record-time"></view>
+      </view>
+      <!-- 可以再加一个 -->
+       <view class="skeleton-record-item">
+        <view class="skeleton-line record-detail medium"></view>
+        <view class="skeleton-line record-time"></view>
       </view>
     </view>
   </view>
