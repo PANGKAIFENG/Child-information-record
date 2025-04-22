@@ -1,29 +1,6 @@
 // 统计分析页面
 
-// --- 移除 ECharts 引入 ---
-// import * as echarts from '../../components/ec-canvas/echarts';
-// import { CanvasRenderer } from 'echarts/renderers';
-// import { LineChart, BarChart } from 'echarts/charts';
-// import {
-//   GridComponent,
-//   TooltipComponent,
-//   LegendComponent,
-// } from 'echarts/components';
-
-// if (echarts.use) {
-//     echarts.use([
-//       CanvasRenderer,
-//       LineChart,
-//       BarChart,
-//       GridComponent,
-//       TooltipComponent,
-//       LegendComponent,
-//     ]);
-//     console.log('[ECharts] Registered components for tree shaking.');
-// } else {
-//     console.error("echarts.use is not available...");
-// }
-// --- 移除结束 ---
+// --- 移除 ECharts 引入 (注释已移除) ---
 
 import { getAllRecords } from '../../utils/storage';
 import { formatDate, getDateRange } from '../../utils/time';
