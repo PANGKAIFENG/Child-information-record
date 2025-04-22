@@ -7,8 +7,8 @@ console.log('首页JS文件执行');
 
 Page({
   data: {
-    initialRenderDone: true, // 强制为true，跳过骨架屏
-    contentLoaded: true,     // 强制为true，显示内容
+    initialRenderDone: false, // 改为 false，用于骨架屏
+    contentLoaded: false,     // 改为 false，用于骨架屏
     isLoggedIn: false, // 新增：登录状态
     babyInfo: {        // 宝宝信息
       avatarUrl: DEFAULT_AVATAR, // 默认头像
@@ -35,9 +35,10 @@ Page({
     
     // 加载初始数据
     this.loadBabyInfo();
-    this.loadTodayStats();
-    this.loadRecentRecords();
     
+    // 可以在 onLoad 结束时标记初始渲染完成
+    this.setData({ initialRenderDone: true }); 
+
     // 监听宝宝信息更新事件
     const eventChannel = this.getOpenerEventChannel();
     if (eventChannel && eventChannel.on) {
@@ -89,15 +90,27 @@ Page({
       babyInfo: currentBabyInfo
     });
 
-    // 加载其他数据（统计和最近记录）
+    // 在 onShow 中根据登录状态加载数据
     if (userLoggedIn) {
-      this.loadTodayStats();
-      this.loadRecentRecords();
+      // --- 确保在数据加载完成后设置 contentLoaded --- 
+      Promise.all([
+        this.loadTodayStats(),
+        this.loadRecentRecords()
+      ]).then(() => {
+        // 所有数据加载完成（或失败并已处理）后，标记内容已加载
+        console.log('[onShow] Data loading promises resolved.');
+        this.setData({ contentLoaded: true }); 
+      }).catch(err => {
+        // 即使加载失败，也应显示页面，但可能需要错误提示
+        console.error('[onShow] Error loading data in Promise.all:', err);
+        this.setData({ contentLoaded: true }); // 仍然显示内容区域，但可能是空的或错误状态
+      });
     } else {
-      // 未登录状态下清空或设置默认统计/记录
+      // 未登录状态
       this.setData({
-        todayStats: { feedingCount: '-', totalMilk: '-', sleepHours: '-', excretionCount: '-' },
-        recentRecords: [] 
+          todayStats: { feedingCount: '-', totalMilk: '-', sleepHours: '-', excretionCount: '-' },
+          recentRecords: [],
+          contentLoaded: true // 未登录时也直接显示内容（空状态）
       });
     }
   },

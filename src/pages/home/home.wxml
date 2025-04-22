@@ -1,54 +1,105 @@
 <view class="container">
-  <!-- 页面内容 -->
-  <view class="header">
-    <view class="user-info" bindtap="{{ !isLoggedIn ? 'goToMyPage' : '' }}">
-      <image class="avatar" src="{{babyInfo.avatarUrl}}" mode="aspectFill"></image>
-      <view class="user-text">
-        <text class="name">{{babyInfo.nickName || '宝宝'}}</text>
-        <text class="age">{{babyInfo.age || '请先登录'}}</text>
+  <!-- 骨架屏 -->
+  <view class="skeleton" wx:if="{{!contentLoaded}}">
+    <view class="skeleton-header">
+      <view class="skeleton-avatar"></view>
+      <view class="skeleton-user-text">
+        <view class="skeleton-line" style="width: 60px;"></view>
+        <view class="skeleton-line" style="width: 80px; margin-top: 8px;"></view>
       </view>
     </view>
-  </view>
-
-  <view class="quick-access">
-    <view class="access-button" data-type="feeding" bindtap="goToRecord">
-      <image src="/src/assets/images/feeding_icon.png" class="access-icon"></image>
-      <text>喂养</text>
+    <view class="skeleton-quick-access">
+      <view class="skeleton-access-button"></view>
+      <view class="skeleton-access-button"></view>
+      <view class="skeleton-access-button"></view>
+      <view class="skeleton-access-button"></view>
     </view>
-    <view class="access-button" data-type="sleep" bindtap="goToRecord">
-      <image src="/src/assets/images/sleep_icon.png" class="access-icon"></image>
-      <text>睡眠</text>
-    </view>
-    <view class="access-button" data-type="excretion" bindtap="goToRecord">
-      <image src="/src/assets/images/excretion_icon.png" class="access-icon"></image>
-      <text>排泄</text>
-    </view>
-    <view class="access-button" data-type="supplement" bindtap="goToRecord">
-      <image src="/src/assets/images/supplement_icon.png" class="access-icon"></image>
-      <text>补剂</text>
-    </view>
-  </view>
-
-  <view class="overview">
-    <view class="title">今日概览</view>
-    <view class="overview-grid">
-      <view class="overview-item"><text class="item-label">喂养次数</text><text class="item-value">{{todayStats.feedingCount}} 次</text></view>
-      <view class="overview-item"><text class="item-label">总奶量</text><text class="item-value">{{todayStats.totalMilk}} ml</text></view>
-      <view class="overview-item"><text class="item-label">睡眠时长</text><text class="item-value">{{todayStats.sleepHours}} 小时</text></view>
-      <view class="overview-item"><text class="item-label">排泄次数</text><text class="item-value">{{todayStats.excretionCount}} 次</text></view>
-    </view>
-  </view>
-
-  <view class="recent-records">
-    <view class="title">最近记录</view>
-    <view class="record-list">
-      <view wx:if="{{recentRecords.length > 0}}">
-        <view class="record-item" wx:for="{{recentRecords}}" wx:key="index">
-          <view class="record-content">{{item.detail || '记录详情'}}</view>
-          <view class="record-time">{{item.time || '--:--'}}</view>
+    <view class="skeleton-overview">
+      <view class="skeleton-title-line"></view>
+      <view class="skeleton-grid">
+        <view class="skeleton-grid-item">
+          <view class="skeleton-line" style="width: 70px; height: 12px;"></view>
+          <view class="skeleton-line" style="width: 40px; margin-top: 8px;"></view>
+        </view>
+        <view class="skeleton-grid-item">
+          <view class="skeleton-line" style="width: 60px; height: 12px;"></view>
+          <view class="skeleton-line" style="width: 50px; margin-top: 8px;"></view>
+        </view>
+         <view class="skeleton-grid-item">
+          <view class="skeleton-line" style="width: 70px; height: 12px;"></view>
+          <view class="skeleton-line" style="width: 50px; margin-top: 8px;"></view>
+        </view>
+        <view class="skeleton-grid-item">
+          <view class="skeleton-line" style="width: 60px; height: 12px;"></view>
+          <view class="skeleton-line" style="width: 40px; margin-top: 8px;"></view>
         </view>
       </view>
-      <view wx:else class="empty-tip">暂无记录</view>
+    </view>
+    <view class="skeleton-recent">
+      <view class="skeleton-title-line"></view>
+      <view class="skeleton-record-item">
+        <view class="skeleton-line" style="width: 80%;"></view>
+        <view class="skeleton-line" style="width: 30px;"></view>
+      </view>
+      <view class="skeleton-record-item">
+        <view class="skeleton-line" style="width: 70%;"></view>
+        <view class="skeleton-line" style="width: 30px;"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 页面实际内容 (仅在 contentLoaded 后显示) -->
+  <view wx:if="{{contentLoaded}}">
+    <view class="header">
+      <view class="user-info" bindtap="{{ !isLoggedIn ? 'goToMyPage' : '' }}">
+        <image class="avatar" src="{{babyInfo.avatarUrl}}" mode="aspectFill"></image>
+        <view class="user-text">
+          <text class="name">{{babyInfo.nickName || '宝宝'}}</text>
+          <text class="age">{{babyInfo.age || '请先登录'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="quick-access">
+      <view class="access-button" data-type="feeding" bindtap="goToRecord">
+        <image src="/src/assets/images/feeding_icon.png" class="access-icon"></image>
+        <text>喂养</text>
+      </view>
+      <view class="access-button" data-type="sleep" bindtap="goToRecord">
+        <image src="/src/assets/images/sleep_icon.png" class="access-icon"></image>
+        <text>睡眠</text>
+      </view>
+      <view class="access-button" data-type="excretion" bindtap="goToRecord">
+        <image src="/src/assets/images/excretion_icon.png" class="access-icon"></image>
+        <text>排泄</text>
+      </view>
+      <view class="access-button" data-type="supplement" bindtap="goToRecord">
+        <image src="/src/assets/images/supplement_icon.png" class="access-icon"></image>
+        <text>补剂</text>
+      </view>
+    </view>
+
+    <view class="overview">
+      <view class="title">今日概览</view>
+      <view class="overview-grid">
+        <view class="overview-item"><text class="item-label">喂养次数</text><text class="item-value">{{todayStats.feedingCount}} 次</text></view>
+        <view class="overview-item"><text class="item-label">总奶量</text><text class="item-value">{{todayStats.totalMilk}} ml</text></view>
+        <view class="overview-item"><text class="item-label">睡眠时长</text><text class="item-value">{{todayStats.sleepHours}} 小时</text></view>
+        <view class="overview-item"><text class="item-label">排泄次数</text><text class="item-value">{{todayStats.excretionCount}} 次</text></view>
+      </view>
+    </view>
+
+    <view class="recent-records">
+      <view class="title">最近记录</view>
+      <view class="record-list">
+        <view wx:if="{{recentRecords.length > 0}}">
+          <view class="record-item" wx:for="{{recentRecords}}" wx:key="index">
+            <view class="record-content">{{item.detail || '记录详情'}}</view>
+            <view class="record-time">{{item.time || '--:--'}}</view>
+          </view>
+        </view>
+        <view wx:else class="empty-tip">暂无记录</view>
+      </view>
     </view>
   </view>
 </view> 

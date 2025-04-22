@@ -7,44 +7,126 @@
 
 /* 骨架屏样式 */
 .skeleton {
-  width: 100%;
-  animation: pulse 1.5s infinite alternate;
-  padding: 10px;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.skeleton-line {
+  background-color: #f0f0f0; /* 骨架屏基础灰色 */
+  border-radius: 4px;
+  height: 16px; /* 默认行高 */
+  width: 100%; /* 默认宽度 */
+  animation: skeleton-blink 1.2s ease-in-out infinite; /* 添加动画 */
 }
 
 .skeleton-header {
-  height: 150rpx;
-  background: #e9ecef;
-  border-radius: 16rpx;
-  margin-bottom: 30rpx;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
-.skeleton-stats {
-  height: 200rpx;
-  background: #e9ecef;
-  border-radius: 16rpx;
-  margin-bottom: 30rpx;
+.skeleton-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  margin-right: 15px;
+  animation: skeleton-blink 1.2s ease-in-out infinite;
 }
 
-.skeleton-list {
-  margin-top: 20rpx;
+.skeleton-user-text {
+  flex: 1;
 }
 
-.skeleton-item {
-  height: 120rpx;
-  background: #e9ecef;
-  border-radius: 12rpx;
-  margin-bottom: 20rpx;
+.skeleton-user-text .skeleton-line:last-child {
+  margin-top: 8px;
 }
 
-@keyframes pulse {
-  0% {
-    opacity: 0.6;
-  }
-  100% {
-    opacity: 1;
-  }
+.skeleton-quick-access {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 25px;
 }
+
+.skeleton-access-button {
+  width: 50px;
+  height: 70px; /* 大致模拟图标+文字 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* 模拟按钮内部结构 */
+.skeleton-access-button::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 40px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  animation: skeleton-blink 1.2s ease-in-out infinite;
+}
+.skeleton-access-button::after {
+  content: '';
+  display: block;
+  width: 30px;
+  height: 12px;
+  background-color: #f0f0f0;
+   border-radius: 4px;
+   animation: skeleton-blink 1.2s ease-in-out infinite;
+}
+
+
+.skeleton-overview,
+.skeleton-recent {
+  margin-bottom: 25px;
+}
+
+.skeleton-title-line {
+  height: 18px;
+  width: 100px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  animation: skeleton-blink 1.2s ease-in-out infinite;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.skeleton-grid-item {
+  /* 样式已通过内部的 skeleton-line 定义 */
+}
+
+.skeleton-grid-item .skeleton-line:last-child {
+  margin-top: 8px;
+}
+
+
+.skeleton-record-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5; /* 添加分隔线模拟列表项 */
+}
+
+.skeleton-record-item:last-child {
+  border-bottom: none;
+}
+
+
+/* 简单的闪烁动画 */
+@keyframes skeleton-blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* -------- 骨架屏样式结束 -------- */
 
 .header {
   display: flex;

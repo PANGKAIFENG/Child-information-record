@@ -1,28 +1,42 @@
 // 统计分析页面
-import * as echarts from '../../components/ec-canvas/echarts'; // Import ECharts
-import { getAllRecords } from '../../utils/storage'; // Assuming a utility function to get all records
-import { formatDate, getDateRange } from '../../utils/time'; // Assuming utility functions for time/date
 
-// Helper to initialize charts
-function initChart(canvasId, ecComponent, option) {
-  if (!ecComponent) {
-      console.error(`Component for canvasId '${canvasId}' not found.`);
-      return;
-  }
-  // Ensure the component is ready before initializing
-  ecComponent.init((canvas, width, height, dpr) => {
-    const chart = echarts.init(canvas, null, {
-      width: width,
-      height: height,
-      devicePixelRatio: dpr // new Add devicePixelRatio
-    });
-    canvas.setChart(chart);
-    // 在 setOption 时添加第二个参数 notMerge = true，强制替换配置
-    chart.setOption(option, true); 
-    console.log(`Chart initialized for ${canvasId}`);
-    return chart;
-  });
-}
+// --- 移除 ECharts 引入 ---
+// import * as echarts from '../../components/ec-canvas/echarts';
+// import { CanvasRenderer } from 'echarts/renderers';
+// import { LineChart, BarChart } from 'echarts/charts';
+// import {
+//   GridComponent,
+//   TooltipComponent,
+//   LegendComponent,
+// } from 'echarts/components';
+
+// if (echarts.use) {
+//     echarts.use([
+//       CanvasRenderer,
+//       LineChart,
+//       BarChart,
+//       GridComponent,
+//       TooltipComponent,
+//       LegendComponent,
+//     ]);
+//     console.log('[ECharts] Registered components for tree shaking.');
+// } else {
+//     console.error("echarts.use is not available...");
+// }
+// --- 移除结束 ---
+
+import { getAllRecords } from '../../utils/storage';
+import { formatDate, getDateRange } from '../../utils/time';
+
+// 1. 引入 wx-charts
+const wxCharts = require('../../utils/wx-charts.js'); // 确保路径正确
+
+// --- 可以移除之前注释掉的 ECharts initChart 函数 ---
+
+// 存储图表实例，方便后续操作（例如更新数据、处理交互）
+let feedingChart = null;
+let sleepChart = null;
+let excretionChart = null;
 
 Page({
   data: {
@@ -41,43 +55,40 @@ Page({
     startDate: '',
     endDate: '',
 
-    ecFeeding: {
-      lazyLoad: true
-    },
-    ecSleep: {
-      lazyLoad: true
-    },
-    ecExcretion: {
-      lazyLoad: true
-    },
-    // chartData 保持不变，用于内部处理
-    chartData: {
+    // 移除 ecFeeding, ecSleep, ecExcretion
+    chartData: { // chartData 结构基本可用，excretion 需要适配 series
       feeding: { xAxis: [], series: [] },
       sleep: { xAxis: [], series: [] },
       excretion: { xAxis: [], peeSeries: [], poopSeries: [] }
-    }
+    },
+    chartWidth: 300 // 重新加入 chartWidth
   },
 
   onLoad: function(options) {
-    // 移除旧的 fetchStatisticsData 调用
+    // 重新加入宽度计算
+    const sysInfo = wx.getSystemInfoSync();
+    this.setData({
+      chartWidth: sysInfo.windowWidth * 0.9 // 或其他合适的计算
+    });
   },
 
   onReady: function() {
-    this.feedingChartComponent = this.selectComponent('#feeding-chart-dom');
-    this.sleepChartComponent = this.selectComponent('#sleep-chart-dom');
-    this.excretionChartComponent = this.selectComponent('#excretion-chart-dom');
-    this.handleDimensionChange(this.data.selectedDimensionIndex);
+    console.log("[统计页面] onReady 被触发");
+    wx.nextTick(() => {
+        console.log("[统计页面] onReady -> nextTick: 回调开始");
+        // !! 取消注释，恢复数据加载 !!
+        this.handleDimensionChange(this.data.selectedDimensionIndex);
+        // 移除所有诊断代码
+    });
   },
 
   onShow: function() {
     console.log("[统计页面] onShow 被触发");
-    // 每次显示页面时，重新加载当前选中维度的数据
-    if (this.feedingChartComponent && this.sleepChartComponent && this.excretionChartComponent) {
-      // 确保图表组件都已初始化
-      this.handleDimensionChange(this.data.selectedDimensionIndex);
-      console.log("[统计页面] 已刷新数据");
+    // 保留这里的逻辑，只有图表实例存在时才刷新
+    if (feedingChart || sleepChart || excretionChart) {
+        this.handleDimensionChange(this.data.selectedDimensionIndex);
     } else {
-      console.log("[统计页面] 图表组件尚未初始化完成，将在onReady中加载数据");
+        console.log("[统计页面] onShow: 图表尚未初始化，等待 onReady 完成");
     }
   },
 
@@ -257,377 +268,88 @@ Page({
       });
   },
 
+  // 2. 重写 renderCharts 函数
   renderCharts: function (chartData) {
-    // --- 添加调试日志 ---
-    console.log('[renderCharts] Received chartData:', chartData);
-    if (chartData && chartData.feeding) {
-      console.log('[renderCharts] Feeding xAxis:', chartData.feeding.xAxis, 'Length:', chartData.feeding.xAxis?.length);
-      console.log('[renderCharts] Feeding dataZoom condition met?', (chartData.feeding.xAxis?.length || 0) > 7);
+    console.log("[statistics] Rendering charts with wx-charts. Data:", chartData);
+    if (!chartData) {
+        console.warn("[statistics] No chart data provided to renderCharts.");
+        return;
     }
-    if (chartData && chartData.sleep) {
-      console.log('[renderCharts] Sleep xAxis:', chartData.sleep.xAxis, 'Length:', chartData.sleep.xAxis?.length);
-      console.log('[renderCharts] Sleep dataZoom condition met?', (chartData.sleep.xAxis?.length || 0) > 7);
-    }
-    if (chartData && chartData.excretion) {
-      console.log('[renderCharts] Excretion xAxis:', chartData.excretion.xAxis, 'Length:', chartData.excretion.xAxis?.length);
-      console.log('[renderCharts] Excretion dataZoom condition met?', (chartData.excretion.xAxis?.length || 0) > 7);
-    }
-    // --- 调试日志结束 ---
 
-    // Check if components are ready before initializing
-    if (this.feedingChartComponent) {
-        console.log("Initializing feeding chart...");
-        // 传递 feeding 数据给 getFeedingOption
-        initChart('feeding-chart', this.feedingChartComponent, this.getFeedingOption(chartData.feeding)); 
-    } else {
-        console.warn("Feeding chart component not ready.") // 加个点
-    }
-    if (this.sleepChartComponent) {
-         console.log("Initializing sleep chart...");
-         // 传递 sleep 数据给 getSleepOption
-        initChart('sleep-chart', this.sleepChartComponent, this.getSleepOption(chartData.sleep)); 
-    } else {
-         console.warn("Sleep chart component not ready.") // 加个点
-    }
-    if (this.excretionChartComponent) {
-         console.log("Initializing excretion chart...");
-         // 传递 excretion 数据给 getExcretionOption
-        initChart('excretion-chart', this.excretionChartComponent, this.getExcretionOption(chartData.excretion)); 
-    } else {
-         console.warn("Excretion chart component not ready.") // 加个点
-    }
+    // 使用 wx.nextTick 确保 DOM 更新后再查询
+    wx.nextTick(() => {
+        this.renderChartsWithQuery(chartData); // 调用包含查询逻辑的函数
+    });
   },
 
-  // --- ECharts Option Generators --- //
-  getFeedingOption: function (data) {
-    return {
-      tooltip: { 
-        trigger: 'axis',
-        confine: true,
-        formatter: function(params) {
-          const param = params[0];
-          return `${param.name}<br/>${param.seriesName}: ${param.value} ml`;
-        }
-      },
-      grid: { 
-        left: '10%', 
-        right: '5%', 
-        bottom: '15%', // Adjust bottom spacing if needed after removing dataZoom
-        top: '10%',
-        containLabel: true 
-      },
-      xAxis: { 
-        type: 'category', 
-        boundaryGap: false, 
-        data: data.xAxis,
-        axisLine: { lineStyle: { color: '#ddd', width: 1 } },
-        axisLabel: { 
-          color: '#666',
-          interval: data.xAxis.length > 10 ? 'auto' : 0,
-          rotate: data.xAxis.length > 7 ? 30 : 0,
-          fontSize: 10,
-          formatter: function(value) {
-            // 当日期较多时简化显示
-            if (data.xAxis.length > 14) {
-              return value.split('-')[1];
-            }
-            return value;
-          }
-        },
-      },
-      yAxis: { 
-        type: 'value', 
-        name: 'ml',
-        nameTextStyle: { color: '#666', fontSize: 10, padding: [0, 0, 0, 10] },
-        axisLine: { lineStyle: { color: '#ddd', width: 1 } },
-        splitLine: { lineStyle: { color: '#eee', type: 'dashed' } },
-        axisLabel: { fontSize: 10 }
-      },
-      series: [{
-        name: '奶量',
-        type: 'line',
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 6,
-        sampling: 'average', // 数据量大时的抽样方法
-        data: data.series,
-        lineStyle: { 
-          width: 2,
-          color: '#ff6b81' 
-        },
-        itemStyle: { 
-          color: '#ff6b81',
-          borderWidth: 2,
-          borderColor: '#fff'
-        },
-        areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0, y: 0, x2: 0, y2: 1,
-            colorStops: [
-              { offset: 0, color: 'rgba(255, 107, 129, 0.3)' },
-              { offset: 1, color: 'rgba(255, 107, 129, 0.05)' }
-            ]
-          }
-        },
-        emphasis: {
-          itemStyle: {
-            borderColor: '#ff6b81',
-            borderWidth: 3,
-            shadowBlur: 5,
-            shadowColor: 'rgba(255, 107, 129, 0.3)'
-          }
-        },
-        animationDuration: 1000
-      }]
-    };
+  // 3. 移除旧的 ECharts Option 生成函数
+  // getFeedingOption: function (data) { ... },
+  // getSleepOption: function (data) { ... },
+  // getExcretionOption: function (data) { ... }
+
+  // 可以添加图表交互处理函数，例如：
+  // handleChartTouch: function(e) {
+  //   console.log("Chart touch event:", e);
+  //   // wxCharts 实例通常有 showToolTip 方法
+  //   const chartInstance = e.target.id === 'feeding-chart-canvas' ? feedingChart : ...; // 判断是哪个图表
+  //   chartInstance.showToolTip(e, {
+  //      // tooltip 配置
+  //   });
+  // }
+
+  // !! 重命名旧的 renderCharts，移除 setTimeout !!
+  renderChartsWithQuery: function (chartData) {
+    console.log("[statistics] Rendering charts with fixed dimensions after nextTick. Data:", chartData);
+
+    // !! 不再使用 createSelectorQuery !!
+    const chartWidth = this.data.chartWidth;
+    const chartHeight = 200; // 使用 WXML 中设置的高度
+
+    // --- 喂养图表 ---
+    if (chartData.feeding && chartData.feeding.xAxis.length > 0) {
+        feedingChart = new wxCharts({
+            canvasId: 'feeding-chart', type: 'column', categories: chartData.feeding.xAxis,
+            series: [{ name: '奶量(ml)', data: chartData.feeding.series }],
+            yAxis: { format: (val) => val.toFixed(0), title: '奶量 (ml)', min: 0 },
+            xAxis: { disableGrid: true },
+            width: chartWidth, // 使用 this.data.chartWidth
+            height: chartHeight, // 使用固定高度
+            dataLabel: false, legend: false,
+        });
+        console.log(`[statistics] Feeding chart initialized.`);
+    } else { console.warn("[statistics] No data for feeding chart."); }
+
+    // --- 睡眠图表 ---
+    if (chartData.sleep && chartData.sleep.xAxis.length > 0) {
+         sleepChart = new wxCharts({
+             canvasId: 'sleep-chart', type: 'column', categories: chartData.sleep.xAxis,
+             series: [{ name: '睡眠(小时)', data: chartData.sleep.series }],
+             yAxis: { format: (val) => val.toFixed(1), title: '时长 (小时)', min: 0 },
+             xAxis: { disableGrid: true },
+             width: chartWidth, // 使用 this.data.chartWidth
+             height: chartHeight, // 使用固定高度
+             dataLabel: false, legend: false
+         });
+         console.log(`[statistics] Sleep chart initialized.`);
+     } else { console.warn("[statistics] No data for sleep chart."); }
+
+    // --- 排泄图表 ---
+    if (chartData.excretion && chartData.excretion.xAxis.length > 0) {
+         const pointCount = chartData.excretion.xAxis.length;
+         // 这里的宽度计算可以基于 this.data.chartWidth
+         const estimatedDrawableWidth = chartWidth * 0.8;
+         const columnWidth = Math.max(5, Math.min(15, (estimatedDrawableWidth / pointCount / 2) * 0.8));
+         excretionChart = new wxCharts({
+             canvasId: 'excretion-chart', type: 'column', categories: chartData.excretion.xAxis,
+             series: [ { name: '小便', data: chartData.excretion.peeSeries }, { name: '大便', data: chartData.excretion.poopSeries } ],
+             yAxis: { format: (val) => val.toFixed(0), title: '次数', min: 0 },
+             xAxis: { disableGrid: true },
+             width: chartWidth, // 使用 this.data.chartWidth
+             height: chartHeight, // 使用固定高度
+             dataLabel: false, legend: true, extra: { column: { width: columnWidth } }
+         });
+         console.log(`[statistics] Excretion chart initialized.`);
+     } else { console.warn("[statistics] No data for excretion chart."); }
   },
 
-  getSleepOption: function (data) {
-    // 根据数据点数量动态调整柱子宽度 - 适应多天数据
-    const barWidth = data.xAxis.length <= 7 ? '30%' : (data.xAxis.length <= 14 ? '20%' : '10%');
-    
-    // 计算合适的初始显示范围 (不再需要，因为 dataZoom 移除)
-    // const visibleBars = Math.min(7, data.xAxis.length);
-    // const startZoom = data.xAxis.length > visibleBars ? 
-    //  Math.max(0, 100 - (visibleBars/data.xAxis.length * 100)) : 0;
-    
-    return {
-      tooltip: { 
-        trigger: 'axis', 
-        axisPointer: { type: 'shadow' },
-        confine: true, // 确保提示框在图表区域内
-        formatter: function(params) {
-          const param = params[0];
-          return `${param.name}<br/>${param.seriesName}: ${param.value} 小时`;
-        },
-        textStyle: { fontSize: 11 }
-      },
-      grid: { 
-        left: '8%', 
-        right: '5%', 
-        bottom: '10%', // Adjust bottom spacing if needed after removing dataZoom
-        top: '5%',
-        containLabel: true 
-      },
-      xAxis: { 
-        type: 'category', 
-        data: data.xAxis,
-        axisLine: { lineStyle: { color: '#ddd', width: 1 } },
-        axisLabel: { 
-          color: '#666',
-          interval: data.xAxis.length > 15 ? 'auto' : 0, // 数据量大时自动调整间隔
-          rotate: data.xAxis.length > 7 ? 30 : 0, // 数据量大时旋转标签
-          fontSize: 9,
-          formatter: function(value) {
-            // 根据数据量简化日期显示
-            if (data.xAxis.length > 30) {
-              return value.split('-')[1]; // 只显示月份，如"04"
-            } else if (data.xAxis.length > 14) {
-              const parts = value.split('-');
-              return parts[1]+'-'+parts[2]; // 显示"04-21"
-            }
-            return value;
-          }
-        },
-        boundaryGap: true,
-        axisTick: {
-          alignWithLabel: true, // 刻度与标签对齐
-          length: 3 // 短刻度线
-        }
-      },
-      yAxis: { 
-        type: 'value', 
-        name: '小时',
-        nameTextStyle: { color: '#666', fontSize: 9, padding: [0, 0, 0, 10] },
-        axisLine: { lineStyle: { color: '#ddd', width: 1 } },
-        splitLine: { lineStyle: { color: '#eee', type: 'dashed' } },
-        axisLabel: { fontSize: 9 }
-      },
-      series: [{
-        name: '睡眠',
-        type: 'bar',
-        barWidth: barWidth,
-        data: data.series,
-        itemStyle: { 
-          color: {
-            type: 'linear',
-            x: 0, y: 0, x2: 0, y2: 1,
-            colorStops: [
-              { offset: 0, color: '#8E9EFF' },
-              { offset: 1, color: '#4F66FF' }
-            ]
-          },
-          borderRadius: [2, 2, 0, 0] // 顶部圆角
-        },
-        emphasis: {
-          itemStyle: { 
-            shadowBlur: 5,
-            shadowColor: 'rgba(0,0,0,0.1)'
-          },
-          // 添加标签以便高亮显示数值
-          label: {
-            show: true,
-            position: 'top',
-            formatter: '{c}',
-            fontSize: 10,
-            color: '#666'
-          }
-        },
-        animationDelay: function (idx) {
-          return idx * 30;
-        },
-        animationDuration: 600
-      }]
-    };
-  },
-
-  getExcretionOption: function (data) {
-    // 根据数据点数量动态调整柱子宽度
-    const barWidth = data.xAxis.length <= 7 ? '30%' : (data.xAxis.length <= 14 ? '20%' : '10%');
-    
-    // 计算合适的初始显示范围 (不再需要，因为 dataZoom 移除)
-    // const visibleBars = Math.min(7, data.xAxis.length);
-    // const startZoom = data.xAxis.length > visibleBars ? 
-    //   Math.max(0, 100 - (visibleBars/data.xAxis.length * 100)) : 0;
-    
-    // 更美观的颜色
-    const peeColor = {
-      type: 'linear',
-      x: 0, y: 0, x2: 0, y2: 1,
-      colorStops: [
-        { offset: 0, color: '#95D8FF' }, 
-        { offset: 1, color: '#7AC5FF' }
-      ]
-    }; 
-    const poopColor = {
-      type: 'linear',
-      x: 0, y: 0, x2: 0, y2: 1,
-      colorStops: [
-        { offset: 0, color: '#EFBB64' }, 
-        { offset: 1, color: '#D9AA56' }
-      ]
-    };
-    
-    return {
-      tooltip: { 
-        trigger: 'axis', 
-        axisPointer: { type: 'shadow' },
-        confine: true,
-        formatter: function(params) {
-          let result = params[0].name + '<br/>';
-          params.forEach(param => {
-            result += `${param.seriesName}: ${param.value} 次<br/>`;
-          });
-          return result;
-        },
-        textStyle: { fontSize: 11 }
-      },
-      legend: { 
-        data: ['小便', '大便'], 
-        bottom: 10, // 调整 legend 位置，因为 dataZoom 移除了
-        icon: 'roundRect',
-        itemWidth: 10,
-        itemHeight: 10,
-        itemGap: 15,
-        textStyle: { fontSize: 10, color: '#666' }
-      },
-      grid: { 
-        left: '8%', 
-        right: '5%', 
-        bottom: '15%', // 调整 bottom spacing，留出空间给 legend
-        top: '5%',
-        containLabel: true 
-      },
-      xAxis: { 
-        type: 'category', 
-        data: data.xAxis,
-        axisLine: { lineStyle: { color: '#ddd', width: 1 } },
-        axisLabel: { 
-          color: '#666',
-          interval: data.xAxis.length > 15 ? 'auto' : 0,
-          rotate: data.xAxis.length > 7 ? 30 : 0,
-          fontSize: 9,
-          formatter: function(value) {
-            // 根据数据量简化日期显示
-            if (data.xAxis.length > 30) {
-              return value.split('-')[1]; // 只显示月份，如"04"
-            } else if (data.xAxis.length > 14) {
-              const parts = value.split('-');
-              return parts[1]+'-'+parts[2]; // 显示"04-21"
-            }
-            return value;
-          }
-        },
-        boundaryGap: true,
-        axisTick: {
-          alignWithLabel: true, // 刻度与标签对齐
-          length: 3 // 短刻度线
-        }
-      },
-      yAxis: { 
-        type: 'value', 
-        name: '次',
-        nameTextStyle: { color: '#666', fontSize: 9, padding: [0, 0, 0, 10] },
-        axisLine: { lineStyle: { color: '#ddd', width: 1 } },
-        splitLine: { lineStyle: { color: '#eee', type: 'dashed' } },
-        axisLabel: { fontSize: 9 },
-        minInterval: 1 // 确保Y轴增量至少为1
-      },
-      series: [
-        {
-          name: '小便',
-          type: 'bar',
-          stack: '总量',
-          barWidth: barWidth,
-          data: data.peeSeries,
-          itemStyle: { 
-            color: peeColor,
-            borderRadius: [2, 0, 0, 0] // 左上角圆角
-          },
-          emphasis: { 
-            itemStyle: { shadowBlur: 5, shadowColor: 'rgba(0,0,0,0.1)' },
-            // 当只有一个系列有值时显示标签
-            label: {
-              show: function(params) {
-                // 检查对应索引的大便数据是否为0
-                return data.poopSeries[params.dataIndex] === 0;
-              },
-              position: 'top',
-              formatter: '{c}',
-              fontSize: 10,
-              color: '#666'
-            }
-          },
-          animationDelay: function (idx) { return idx * 30; }
-        },
-        {
-          name: '大便',
-          type: 'bar',
-          stack: '总量',
-          data: data.poopSeries,
-          itemStyle: { 
-            color: poopColor,
-            borderRadius: [0, 2, 0, 0] // 右上角圆角
-          },
-          emphasis: { 
-            itemStyle: { shadowBlur: 5, shadowColor: 'rgba(0,0,0,0.1)' },
-            // 当只有一个系列有值或者位于顶部时显示标签
-            label: {
-              show: function(params) {
-                return params.value > 0;
-              },
-              position: 'top',
-              formatter: '{c}',
-              fontSize: 10,
-              color: '#666'
-            }
-          },
-          animationDelay: function (idx) { return idx * 30 + 50; }
-        }
-      ],
-      animationEasing: 'elasticOut',
-      animationDuration: 600
-    };
-  }
-}) 
+}); 

@@ -44,9 +44,12 @@
   <view class="chart-container">
     <view class="chart-title">喂养趋势 (总奶量)</view>
     <view class="chart-wrapper">
-      <ec-canvas id="feeding-chart-dom" 
+      <!-- 移除 ec-canvas -->
+      <!-- <ec-canvas id="feeding-chart-dom" 
                  canvas-id="feeding-chart" 
-                 ec="{{ ecFeeding }}"></ec-canvas>
+                 ec="{{ ecFeeding }}"></ec-canvas> -->
+      <!-- 添加标准 canvas -->
+      <canvas canvas-id="feeding-chart" style="width: 100%; height: 200px;"></canvas>
     </view>
   </view>
 
@@ -54,9 +57,12 @@
   <view class="chart-container">
     <view class="chart-title">睡眠分布 (总时长)</view>
     <view class="chart-wrapper">
-      <ec-canvas id="sleep-chart-dom" 
+      <!-- 移除 ec-canvas -->
+      <!-- <ec-canvas id="sleep-chart-dom" 
                  canvas-id="sleep-chart" 
-                 ec="{{ ecSleep }}"></ec-canvas>
+                 ec="{{ ecSleep }}"></ec-canvas> -->
+      <!-- 添加标准 canvas -->
+      <canvas canvas-id="sleep-chart" style="width: 100%; height: 200px;"></canvas>
     </view>
   </view>
 
@@ -64,9 +70,12 @@
   <view class="chart-container">
     <view class="chart-title">排泄规律 (次数)</view>
     <view class="chart-wrapper">
-      <ec-canvas id="excretion-chart-dom" 
+      <!-- 移除 ec-canvas -->
+      <!-- <ec-canvas id="excretion-chart-dom" 
                  canvas-id="excretion-chart" 
-                 ec="{{ ecExcretion }}"></ec-canvas>
+                 ec="{{ ecExcretion }}"></ec-canvas> -->
+      <!-- 添加标准 canvas -->
+      <canvas canvas-id="excretion-chart" style="width: 100%; height: 200px;"></canvas>
     </view>
   </view>
 </view> 
