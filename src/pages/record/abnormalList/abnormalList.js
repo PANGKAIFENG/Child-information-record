@@ -24,25 +24,24 @@ Page({
       if (prevPage && prevPage.data && prevPage.data.needRefresh) {
         console.log('检测到needRefresh标记，强制刷新列表');
         prevPage.setData({ needRefresh: false }); // 重置标记
-        
-        // 直接加载记录，不进行清理
-        this.loadRecords();
+        this.loadRecords(); // 直接加载数据
         return;
       }
     }
     
     // 正常的页面显示逻辑
-    if (isLoggedIn) {
-      // 如果用户已登录，自动清理无效数据
-      this.autoCleanInvalidRecords();
-    } else {
-      // 用户未登录，直接加载记录（显示空列表）
-      this.loadRecords();
-    }
+    // 移除页面加载时的自动清理调用
+    // if (isLoggedIn) {
+      // this.autoCleanInvalidRecords(); 
+    // } else {
+      // this.loadRecords();
+    // }
+    // 统一调用 loadRecords
+    this.loadRecords(); 
   },
 
   /**
-   * 加载记录列表 (修改为调用云函数)
+   * 加载记录列表 (修改为调用云函数，移除前端过滤和排序)
    */
   loadRecords() {
     // 检查用户是否登录
@@ -55,91 +54,27 @@ Page({
     // 显示加载提示
     wx.showLoading({ title: '加载中...' });
 
-    // 调用 getRecords 云函数
+    // 调用 getRecords 云函数 (云函数应负责返回有效且排序好的数据)
     wx.cloud.callFunction({
       name: 'getRecords',
-      // data: { } // 如果需要传递分页或筛选参数，在这里添加
+      data: { 
+        collectionName: 'abnormal_records' // 明确指定集合名称
+        // 如果需要分页等参数，在这里传递
+       } 
     })
     .then(res => {
       console.log('调用云函数 getRecords 成功:', res);
-      if (res.result && res.result.success && res.result.data) {
-        try {
-          // 获取数据成功
-          // 恢复严格的前端过滤逻辑
-          const validRecords = res.result.data.filter(record => {
-            try {
-              // 更安全的有效性检查
-              const isValid = 
-                record && 
-                typeof record === 'object' &&
-                record._id && 
-                record.recordId &&
-                typeof record.dateTime === 'string' && 
-                // 类型检查 - 至少有一个类型或标记为"其它"
-                (
-                  (Array.isArray(record.types) && record.types.length > 0) || 
-                  record.isOtherType === true
-                );
-              
-              if (!isValid) {
-                console.log('前端过滤掉无效记录:', record);
-                
-                // 只清理有recordId的记录，避免过多无效请求
-                if (record && record.recordId) {
-                  this.directCleanInvalidRecord(record);
-                }
-              }
-              return isValid;
-            } catch (err) {
-              console.error('过滤记录时出错:', err, record);
-              return false;
-            }
-          });
+      if (res.result && res.result.success && Array.isArray(res.result.data)) {
+          // 获取数据成功，直接使用云函数返回的数据
+          this.setData({ recordList: res.result.data });
+          console.log('记录列表已更新，数量:', res.result.data.length);
           
-          // 对有效记录进行排序（按日期时间降序）
-          validRecords.sort((a, b) => {
-            // 尝试解析日期时间
-            const getTimestamp = (record) => {
-              try {
-                // 优先使用timestamp字段
-                if (record.timestamp) return record.timestamp;
-                
-                // 否则尝试解析dateTime字段
-                if (record.dateTime) {
-                  const dt = new Date(record.dateTime.replace(' ', 'T')); // 标准化时间格式
-                  return dt.getTime();
-                }
-                
-                // 最后使用ID (可能包含时间戳)
-                return 0; // 默认最低优先级
-              } catch (e) {
-                return 0; // 解析错误时默认最低优先级
-              }
-            };
-            
-            // 降序排列（最新的在前）
-            return getTimestamp(b) - getTimestamp(a);
-          });
+          // 移除前端的过滤、排序、二次清理逻辑
           
-          this.setData({ recordList: validRecords });
-          console.log('有效记录数量:', validRecords.length, '/ 总记录数:', res.result.data.length);
-          
-          // 如果过滤掉了记录，在控制台中显示详细日志
-          if (validRecords.length < res.result.data.length) {
-            const filteredCount = res.result.data.length - validRecords.length;
-            console.warn(`前端已过滤 ${filteredCount} 条无效记录`);
-          }
-        } catch (error) {
-          // 处理过滤和排序过程中的错误
-          console.error('处理数据时出错:', error);
-          this.setData({ recordList: [] });
-          wx.showToast({ title: '数据处理错误', icon: 'none' });
-        }
       } else {
         // 获取失败或无数据
-        console.warn('获取记录失败或无数据:', res.result);
+        console.warn('获取记录失败或数据格式错误:', res.result);
         this.setData({ recordList: [] }); // 清空列表
-        // 可以根据需要显示提示，例如:
         if (res.result && !res.result.success) {
            wx.showToast({ title: res.result.message || '加载失败', icon: 'none' });
         }
@@ -162,20 +97,27 @@ Page({
   /**
    * 跳转到记录详情页 (修改为实际跳转)
    */
-  goToDetail(e) {
-    // 检查登录状态
-    if (!this.data.isLoggedIn) {
-      wx.showToast({ title: '请先登录', icon: 'none' });
+  goToDetail(event) {
+    const item = event.currentTarget.dataset.item;
+    if (!item || !item._id) { // 修改检查条件为 item._id
+      console.error('[goToDetail] Invalid item or missing _id:', item);
+      wx.showToast({ title: '无法查看详情，缺少记录ID', icon: 'none' });
       return;
     }
     
-    const recordId = e.currentTarget.dataset.id;
-    console.log('Navigate to detail for recordId:', recordId);
+    // 使用 item._id 进行导航
+    const recordId = item._id; 
+    console.log('[abnormalList] Navigating to detail with ID:', recordId); // 打印正确的 _id
 
-    // --- 使用绝对路径 ---
-    wx.navigateTo({
-      url: `/packages/record/abnormal/abnormal?id=${recordId}` // 更新为绝对路径
-    });
+    if (this.data.isLoggedIn) {
+      wx.navigateTo({
+        url: `/packages/record/abnormal/abnormal?id=${recordId}` // 传递 _id
+      });
+    } else {
+      // 如果需要，这里可以添加未登录提示或跳转登录页
+      wx.showToast({ title: '请先登录以查看详情', icon: 'none' });
+      // this.goToLogin(); // 或者跳转到登录
+    }
   },
 
   /**
@@ -266,8 +208,8 @@ Page({
    * 页面相关事件处理函数--监听用户下拉动作
    */
   onPullDownRefresh() {
-    console.log('Pull down to refresh...');
-    this.loadRecords(); // 调用修改后的加载函数
+    console.log('Pull down refresh triggered.');
+    this.loadRecords(); // 下拉刷新时重新加载数据
   },
 
   /**

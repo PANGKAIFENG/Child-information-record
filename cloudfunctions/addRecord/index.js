@@ -56,10 +56,14 @@ exports.main = async (event, context) => {
   try {
     // 准备要保存的数据，添加服务器时间和 OpenID
     const serverDate = db.serverDate();
+    // 生成一个唯一的 recordId (可以使用时间戳+随机数，或更健壮的唯一ID生成方式)
+    const recordId = Date.now().toString() + Math.random().toString(36).substring(2, 8);
     const dataToSave = {
       ...recordData,
       _openid: openid,     // 添加用户 OpenID
-      createTime: serverDate  // 添加服务器时间
+      createTime: serverDate, // 添加服务器时间
+      timestamp: serverDate,  // 使用服务器时间作为 timestamp
+      recordId: recordId     // 添加生成的 recordId
     };
     
     // 确保记录中有 recordDate_local 字段

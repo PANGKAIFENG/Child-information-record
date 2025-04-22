@@ -255,46 +255,74 @@ Page({
       return;
     }
 
-    // 2. 收集数据 (保持不变，暂时忽略照片上传)
+    // 2. 收集数据
+    // 移除自动生成 recordId 和 timestamp，由云函数处理
     const recordData = {
-      recordId: Date.now().toString() + Math.random().toString(36).substring(2, 8),
-      timestamp: Date.now(),
+      // recordId: Date.now().toString() + Math.random().toString(36).substring(2, 8),
+      // timestamp: Date.now(), 
       dateTime: `${this.data.date} ${this.data.time}`,
       types: selectedTypes.filter(t => t.value !== 'other').map(t => t.name),
       isOtherType: isOtherChecked,
       otherTypeDescription: isOtherChecked ? otherDescription : '',
       temperature: this.data.temperature ? parseFloat(this.data.temperature) : null,
-      photos: this.data.photos, // 暂时传递临时路径
+      photos: this.data.photos, // 暂时传递临时路径或 fileIDs
       remarks: this.data.remarks.trim()
     };
 
     // 3. 显示加载提示
     wx.showLoading({ title: '正在保存...' });
 
-    // 4. 调用云函数 addRecord
+    // 4. 判断是新增还是更新，调用不同的云函数
+    let cloudFunctionName = '';
+    let requestData = {};
+
+    if (this.data.recordId) {
+      // --- 更新模式 ---
+      cloudFunctionName = 'updateRecord';
+      requestData = {
+        collectionName: 'abnormal_records', // 指定集合
+        recordId: this.data.recordId,      // 要更新的记录 ID
+        recordData: recordData             // 更新的数据 (不包含 recordId, timestamp)
+      };
+      console.log('[saveRecord] Calling updateRecord with data:', requestData);
+    } else {
+      // --- 新增模式 ---
+      cloudFunctionName = 'addRecord';
+      // addRecord 云函数内部应自动添加 recordId, timestamp, createTime, _openid
+      requestData = {
+        collectionName: 'abnormal_records', // 指定集合
+        recordData: recordData             // 新增的数据
+      };
+      console.log('[saveRecord] Calling addRecord with data:', requestData);
+    }
+
     wx.cloud.callFunction({
-      name: 'addRecord', // 要调用的云函数名称
-      data: {
-        recordData: recordData // 将收集的数据作为参数传递给云函数
-      },
+      name: cloudFunctionName,
+      data: requestData,
       success: res => {
-        console.log('调用云函数 addRecord 成功:', res);
+        console.log(`调用云函数 ${cloudFunctionName} 成功:`, res);
         if (res.result && res.result.success) {
-          // 云函数返回成功
-          wx.showToast({ title: '保存成功' });
+          const successMsg = this.data.recordId ? '更新成功' : '保存成功';
+          wx.showToast({ title: successMsg, icon: 'success' });
+          
+          // 设置刷新标记，确保列表页能看到更新
+          this.setData({ needRefresh: true });
+          
           // 延迟返回上一页
           setTimeout(() => {
             wx.navigateBack();
           }, 1500);
         } else {
           // 云函数返回失败（业务逻辑失败）
-          wx.showToast({ title: res.result.message || '保存失败，请重试', icon: 'none' });
+          const errorMsg = this.data.recordId ? '更新失败' : '保存失败';
+          wx.showToast({ title: res.result?.message || `${errorMsg}，请重试`, icon: 'none' });
         }
       },
       fail: err => {
         // 调用云函数本身失败（网络错误等）
-        console.error('调用云函数 addRecord 失败:', err);
-        wx.showToast({ title: '保存失败，请检查网络', icon: 'none' });
+        console.error(`调用云函数 ${cloudFunctionName} 失败:`, err);
+        const errorMsg = this.data.recordId ? '更新失败' : '保存失败';
+        wx.showToast({ title: `${errorMsg}，请检查网络`, icon: 'none' });
       },
       complete: () => {
         // 无论成功失败，都隐藏加载提示

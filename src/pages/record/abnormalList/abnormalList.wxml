@@ -25,10 +25,10 @@
     <view wx:else class="record-list">
       <view class="record-item" 
             wx:for="{{ recordList }}" 
-            wx:key="recordId" 
-            wx:if="{{item && item.recordId && item.dateTime && (item.types.length > 0 || item.isOtherType)}}"
+            wx:key="_id"  
+            wx:if="{{item && item._id && item.dateTime && (item.types.length > 0 || item.isOtherType)}}"
             bindtap="goToDetail" 
-            data-id="{{item.recordId}}">
+            data-item="{{item}}">
         
         <view class="record-header">
           <text class="record-datetime">{{item.dateTime}}</text>
