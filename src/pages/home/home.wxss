@@ -1,8 +1,49 @@
 /* 首页样式 */
 .container {
-  background-color: var(--background-page);
+  background-color: #f5f7fa;
   min-height: 100vh;
-  padding: 0;
+  padding: 10px;
+}
+
+/* 骨架屏样式 */
+.skeleton {
+  width: 100%;
+  animation: pulse 1.5s infinite alternate;
+  padding: 10px;
+}
+
+.skeleton-header {
+  height: 150rpx;
+  background: #e9ecef;
+  border-radius: 16rpx;
+  margin-bottom: 30rpx;
+}
+
+.skeleton-stats {
+  height: 200rpx;
+  background: #e9ecef;
+  border-radius: 16rpx;
+  margin-bottom: 30rpx;
+}
+
+.skeleton-list {
+  margin-top: 20rpx;
+}
+
+.skeleton-item {
+  height: 120rpx;
+  background: #e9ecef;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .header {
@@ -11,8 +52,9 @@
   align-items: center;
   margin-bottom: 30px;
   padding: 20px 20px 0;
-  background-color: var(--background-card);
+  background-color: white;
   padding-bottom: 20px;
+  border-radius: 10px;
 }
 
 .user-info {
@@ -37,12 +79,12 @@
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 5px;
-  color: var(--text-primary);
+  color: #333333;
 }
 
 .age {
   font-size: 15px;
-  color: var(--text-secondary);
+  color: #666666;
 }
 
 .quick-access {
@@ -53,7 +95,7 @@
 }
 
 .access-button {
-  background-color: var(--background-card);
+  background-color: white;
   border-radius: 8px;
   padding: 15px;
   text-align: center;
@@ -62,7 +104,7 @@
   flex-direction: column;
   align-items: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  color: var(--text-primary);
+  color: #333333;
   font-size: 14px;
 }
 
@@ -73,7 +115,7 @@
 }
 
 .overview {
-  background-color: var(--background-card);
+  background-color: white;
   border-radius: 10px;
   padding: 15px;
   margin: 0 20px 20px;
@@ -85,7 +127,7 @@
   font-weight: bold;
   margin-bottom: 15px;
   display: block;
-  color: var(--text-primary);
+  color: #333333;
 }
 
 .overview-grid {
@@ -101,18 +143,18 @@
 
 .item-label {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: #666666;
   margin-bottom: 5px;
 }
 
 .item-value {
   font-size: 18px;
   font-weight: bold;
-  color: var(--text-primary);
+  color: #333333;
 }
 
 .recent-records {
-  background-color: var(--background-card);
+  background-color: white;
   border-radius: 10px;
   padding: 15px;
   margin: 0 20px;
@@ -124,7 +166,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #eeeeee;
 }
 
 .record-item:last-child {
@@ -144,11 +186,52 @@
 .record-content {
   flex: 1;
   padding: 0 10px;
-  color: var(--text-primary);
+  color: #333333;
   font-size: 15px;
 }
 
 .record-time {
-  color: var(--text-secondary);
+  color: #666666;
   font-size: 14px;
+}
+
+/* 加载指示器样式 */
+.loading-records {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30rpx 0;
+}
+
+.loading {
+  width: 50rpx;
+  height: 50rpx;
+  border: 4rpx solid #f3f3f3;
+  border-top: 4rpx solid #3B82F6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20rpx;
+}
+
+@keyframes spin {
+  0% { 
+    transform: rotate(0deg); 
+  }
+  100% { 
+    transform: rotate(360deg); 
+  }
+}
+
+.loading-records text {
+  font-size: 28rpx;
+  color: #999999;
+}
+
+/* 空状态提示 */
+.empty-tip {
+  text-align: center;
+  color: #999999;
+  font-size: 14px;
+  padding: 15px 0;
 } 

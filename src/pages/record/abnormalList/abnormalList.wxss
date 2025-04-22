@@ -6,6 +6,34 @@
   background-color: var(--background-page);
 }
 
+/* 工具栏样式 */
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 15rpx 30rpx;
+  background-color: var(--background-card);
+  border-bottom: 1rpx solid var(--border-color);
+}
+
+.tool-item {
+  display: flex;
+  align-items: center;
+  padding: 10rpx 20rpx;
+  border-radius: 30rpx;
+  background-color: #f8f8f8;
+}
+
+.tool-icon {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 8rpx;
+}
+
+.tool-text {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
 /* 筛选排序区域 (占位) */
 .filter-sort-section {
   padding: 20rpx 30rpx;
@@ -34,6 +62,42 @@
   width: 150rpx;
   height: 150rpx;
   margin-bottom: 20rpx;
+}
+
+/* 登录按钮样式 */
+.login-btn {
+  width: 80%;
+  height: 90rpx;
+  line-height: 90rpx;
+  border-radius: 45rpx;
+  font-size: 32rpx;
+  margin-top: 40rpx;
+  margin-bottom: 40rpx;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #00c853; /* 使用绿色背景 */
+  color: white;
+}
+
+/* 功能预览样式 */
+.features-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  margin-top: 20rpx;
+}
+
+.feature-item {
+  background-color: #f5f5f5;
+  padding: 10rpx 25rpx;
+  border-radius: 30rpx;
+  margin: 10rpx;
+  font-size: 26rpx;
+  color: #666;
 }
 
 /* 记录列表 */

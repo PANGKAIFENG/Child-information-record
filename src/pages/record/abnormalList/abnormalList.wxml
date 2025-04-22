@@ -7,14 +7,26 @@
   <!-- 记录列表 -->
   <scroll-view scroll-y class="record-list-scroll">
     <view wx:if="{{ recordList.length === 0 }}" class="empty-list-tip">
-      <image class="empty-icon" src="/assets/images/icon-empty.svg" mode="aspectFit"></image>
-      <text>暂无异常记录</text>
+      <image class="empty-icon" src="/src/assets/images/icon-empty.png" mode="aspectFit"></image>
+      
+      <block wx:if="{{!isLoggedIn}}">
+        <text>请先登录后查看</text>
+        <button class="login-btn" type="primary" bindtap="goToLogin">微信用户一键登录</button>
+        <view class="features-preview">
+          <view class="feature-item">记录异常</view>
+          <view class="feature-item">跟踪健康</view>
+          <view class="feature-item">成长记录</view>
+        </view>
+      </block>
+      
+      <text wx:else>暂无异常记录</text>
     </view>
 
     <view wx:else class="record-list">
       <view class="record-item" 
             wx:for="{{ recordList }}" 
             wx:key="recordId" 
+            wx:if="{{item && item.recordId && item.dateTime && (item.types.length > 0 || item.isOtherType)}}"
             bindtap="goToDetail" 
             data-id="{{item.recordId}}">
         
@@ -40,8 +52,8 @@
   </scroll-view>
 
   <!-- 新增：悬浮按钮入口 -->
-  <view class="fab-add-record" bindtap="goToAddRecord">
-    <image src="/assets/images/icon-add.png" mode="aspectFit"></image> <!-- 假设有加号图标 -->
+  <view class="fab-add-record" bindtap="goToAddRecord" wx:if="{{isLoggedIn}}">
+    <image src="/src/assets/images/icon-add.png" mode="aspectFit"></image>
   </view>
 
   <!-- 可能需要一个返回按钮 -->

@@ -29,7 +29,8 @@ Page({
 
     remarks: '', // 备注
     maxLength: 200, // 最大备注字数
-    remainingChars: 200 // 剩余字数
+    remainingChars: 200, // 剩余字数
+    needRefresh: false // 新增：标记是否需要刷新列表
   },
 
   /**
@@ -71,6 +72,18 @@ Page({
       if (res.result && res.result.success && res.result.data) {
         const record = res.result.data;
         
+        // 检查记录数据的有效性
+        if (!record.dateTime || ((!record.types || record.types.length === 0) && !record.isOtherType)) {
+          console.error('记录数据无效:', record);
+          wx.showToast({ 
+            title: '记录数据无效或已损坏', 
+            icon: 'none' 
+          });
+          // 延迟返回列表页
+          setTimeout(() => wx.navigateBack(), 1500);
+          return;
+        }
+        
         // 填充表单数据
         const [datePart, timePart] = (record.dateTime || '').split(' '); // 分割日期和时间
         const updatedTypes = this.data.abnormalTypes.map(item => {
@@ -88,23 +101,36 @@ Page({
           abnormalTypes: updatedTypes,
           showOtherInput: showOther,
           otherTypeDescription: record.otherTypeDescription || '',
-          temperature: record.temperature,
+          temperature: record.temperature || '',  // 确保空值为空字符串而不是null
           date: datePart || formatDate(new Date()), // 如果没有日期部分，用当前日期
           time: timePart || formatTime(new Date(), 'HH:mm'), // 如果没有时间部分，用当前时间
           photos: record.photos || [], // 注意：这里仍然是临时路径或fileId
           remarks: remarks,
-          remainingChars: remaining >= 0 ? remaining : 0
+          remainingChars: remaining >= 0 ? remaining : 0,
+          needRefresh: true // 设置需要刷新列表
         });
+        
+        console.log('已加载记录详情:', this.data);
 
       } else {
-        wx.showToast({ title: res.result.message || '加载记录失败', icon: 'none' });
-        // 加载失败可能需要返回列表页
+        // 处理API返回的错误
+        const errorMsg = res.result?.message || '未找到指定记录';
+        console.error('加载记录详情失败:', errorMsg);
+        wx.showToast({ 
+          title: errorMsg, 
+          icon: 'none' 
+        });
+        // 加载失败返回列表页
         setTimeout(() => wx.navigateBack(), 1500);
       }
     })
     .catch(err => {
+      // 处理网络或其他错误
       console.error('调用 getRecordById 失败:', err);
-      wx.showToast({ title: '加载失败，请重试', icon: 'none' });
+      wx.showToast({ 
+        title: '加载失败，请检查网络连接', 
+        icon: 'none' 
+      });
       setTimeout(() => wx.navigateBack(), 1500);
     })
     .finally(() => {
@@ -287,5 +313,107 @@ Page({
     console.log('Switching to Edit Mode');
     this.setData({ isViewMode: false });
     wx.setNavigationBarTitle({ title: '编辑异常记录' }); // 修改标题
+  },
+
+  /**
+   * 新增：处理点击删除按钮
+   */
+  handleDelete() {
+    console.log('Deleting record:', this.data.recordId);
+    
+    // 显示确认对话框
+    wx.showModal({
+      title: '确认删除',
+      content: '确定要删除这条异常记录吗？删除后将无法恢复。',
+      confirmColor: '#e64340', // 红色确认按钮
+      success: (res) => {
+        if (res.confirm) {
+          // 用户点击了确认按钮
+          this.deleteRecord();
+        }
+      }
+    });
+  },
+  
+  /**
+   * 执行删除记录操作
+   */
+  deleteRecord() {
+    // 显示加载提示
+    wx.showLoading({ title: '正在删除...' });
+    
+    // 调用云函数删除记录
+    wx.cloud.callFunction({
+      name: 'deleteRecord',
+      data: {
+        recordId: this.data.recordId,
+        collection: 'abnormal_records' // 指定集合名称
+      }
+    })
+    .then(res => {
+      console.log('调用云函数 deleteRecord 成功:', res);
+      
+      // 无论成功失败，都先隐藏加载提示
+      wx.hideLoading();
+      
+      if (res.result && res.result.success) {
+        // 删除成功
+        wx.showToast({ 
+          title: '删除成功',
+          icon: 'success',
+          mask: true // 防止用户点击穿透
+        });
+        
+        // 设置标记，表示需要刷新列表
+        this.setData({ needRefresh: true });
+        
+        // 延迟返回列表页
+        setTimeout(() => {
+          wx.navigateBack({
+            success: () => {
+              console.log('成功返回列表页，将触发刷新');
+            }
+          });
+        }, 1000);
+      } else {
+        // 删除失败
+        console.error('删除失败:', res.result);
+        
+        // 特殊处理"记录不存在"的情况
+        if (res.result && res.result.message === '未找到指定记录') {
+          wx.showModal({
+            title: '记录已不存在',
+            content: '此记录可能已被删除，是否返回列表？',
+            confirmText: '返回列表',
+            cancelText: '留在当前页',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                // 用户选择返回列表
+                this.setData({ needRefresh: true });
+                wx.navigateBack();
+              }
+            }
+          });
+        } else {
+          // 其他错误情况
+          wx.showToast({ 
+            title: res.result?.message || '删除失败，请重试', 
+            icon: 'none',
+            duration: 2000
+          });
+        }
+      }
+    })
+    .catch(err => {
+      // 确保在出错时也隐藏loading
+      wx.hideLoading();
+      
+      console.error('调用云函数 deleteRecord 失败:', err);
+      wx.showToast({ 
+        title: '删除失败，请检查网络', 
+        icon: 'none',
+        duration: 2000
+      });
+    });
   }
 }) 

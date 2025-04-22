@@ -1,17 +1,11 @@
 <view class="container">
+  <!-- 页面内容 -->
   <view class="header">
-    <view wx:if="{{isLoggedIn}}" class="user-info">
+    <view class="user-info">
       <image class="avatar" src="{{babyInfo.avatarUrl}}" mode="aspectFill"></image>
       <view class="user-text">
-        <text class="name">{{babyInfo.nickName}}</text>
-        <text class="age">{{babyInfo.age}}</text>
-      </view>
-    </view>
-    <view wx:else class="user-info" bindtap="goToMyPage">
-      <image class="avatar" src="{{babyInfo.avatarUrl}}" mode="aspectFill"></image>
-      <view class="user-text">
-        <text class="name">请先登录</text>
-        <text class="age">点击登录/注册</text>
+        <text class="name">{{babyInfo.nickName || '宝宝'}}</text>
+        <text class="age">{{babyInfo.age || '请先登录'}}</text>
       </view>
     </view>
   </view>
@@ -37,27 +31,24 @@
 
   <view class="overview">
     <view class="title">今日概览</view>
-    <view wx:if="{{isLoggedIn}}" class="overview-grid">
+    <view class="overview-grid">
       <view class="overview-item"><text class="item-label">喂养次数</text><text class="item-value">{{todayStats.feedingCount}} 次</text></view>
       <view class="overview-item"><text class="item-label">总奶量</text><text class="item-value">{{todayStats.totalMilk}} ml</text></view>
       <view class="overview-item"><text class="item-label">睡眠时长</text><text class="item-value">{{todayStats.sleepHours}} 小时</text></view>
       <view class="overview-item"><text class="item-label">排泄次数</text><text class="item-value">{{todayStats.excretionCount}} 次</text></view>
     </view>
-    <view wx:else class="empty-tip" bindtap="goToMyPage">登录后查看今日统计</view>
   </view>
 
   <view class="recent-records">
     <view class="title">最近记录</view>
-    <view wx:if="{{isLoggedIn && recentRecords.length > 0}}" class="record-list">
-      <view class="record-item" wx:for="{{recentRecords}}" wx:key="index">
-        <view class="record-icon">
-          <image src="{{item.icon}}" class=""></image>
+    <view class="record-list">
+      <view wx:if="{{recentRecords.length > 0}}">
+        <view class="record-item" wx:for="{{recentRecords}}" wx:key="index">
+          <view class="record-content">{{item.detail || '记录详情'}}</view>
+          <view class="record-time">{{item.time || '--:--'}}</view>
         </view>
-        <view class="record-content">{{item.detail || ''}}</view>
-        <view class="record-time">{{item.time}}</view>
       </view>
+      <view wx:else class="empty-tip">暂无记录</view>
     </view>
-    <view wx:elif="{{isLoggedIn && recentRecords.length === 0}}" class="empty-tip">暂无记录</view>
-    <view wx:else class="empty-tip" bindtap="goToMyPage">登录后查看最近记录</view>
   </view>
 </view> 

@@ -52,5 +52,5 @@
   "lazyCodeLoading": "requiredComponents",
   "sitemapLocation": "sitemap.json",
   "style": "v2",
-  "libVersion": "3.6.6"
+  "libVersion": "2.25.3"
 } 

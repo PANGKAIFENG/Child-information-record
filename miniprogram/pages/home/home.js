@@ -1,5 +1,96 @@
 Page({
-  // 其他函数和数据...
+  data: {
+    initialRenderDone: false, // 控制骨架屏显示
+    contentLoaded: false,     // 控制内容区域分步加载
+    isLoggedIn: false,
+    openid: '',
+    babyInfo: {
+      avatarUrl: '',
+      nickName: '',
+      age: ''
+    },
+    todayStats: {
+      feedingCount: '-',
+      totalMilk: '-',
+      sleepHours: '-',
+      excretionCount: '-'
+    },
+    recentRecords: []
+  },
+
+  onLoad: function() {
+    // 快速展示界面框架，减轻首次加载白屏感
+    setTimeout(() => {
+      this.setData({ initialRenderDone: true });
+    }, 100);
+
+    // 立即加载基本信息
+    this.checkLoginStatus();
+    this.loadBabyInfo();
+    
+    // 延迟加载次要信息
+    setTimeout(() => {
+      this.loadDataInBackground();
+    }, 300);
+  },
+  
+  onShow: function() {
+    console.log('[onShow] Home page shown');
+    
+    // 检查页面数据刷新标记
+    const pages = getCurrentPages();
+    const currentPage = pages[pages.length - 1];
+    if (currentPage && currentPage.data.needsRefresh) {
+      console.log('[onShow] Page needs refresh');
+      currentPage.setData({ needsRefresh: false });
+      this.loadDataInBackground();
+    }
+    
+    // 处理登录状态变化
+    const loginStatus = wx.getStorageSync('isLoggedIn') || false;
+    if (loginStatus !== this.data.isLoggedIn) {
+      console.log('[onShow] Login status changed to', loginStatus);
+      this.checkLoginStatus();
+      this.loadBabyInfo();
+      
+      if (loginStatus) {
+        this.loadDataInBackground();
+      }
+    }
+  },
+  
+  // 检查登录状态
+  checkLoginStatus: function() {
+    const isLoggedIn = wx.getStorageSync('isLoggedIn') || false;
+    const openid = wx.getStorageSync('openid') || '';
+    this.setData({ isLoggedIn, openid });
+  },
+  
+  // 后台加载数据
+  loadDataInBackground: function() {
+    if (!this.data.isLoggedIn) return;
+    
+    // 加载今日统计
+    this.loadTodayStats()
+      .then(() => {
+        console.log('[loadDataInBackground] Today stats loaded');
+      })
+      .catch(err => {
+        console.error('[loadDataInBackground] Failed to load today stats', err);
+      });
+    
+    // 加载最近记录
+    this.loadRecentRecords()
+      .then(() => {
+        console.log('[loadDataInBackground] Recent records loaded');
+        // 标记内容已加载完成
+        this.setData({ contentLoaded: true });
+      })
+      .catch(err => {
+        console.error('[loadDataInBackground] Failed to load recent records', err);
+        this.setData({ contentLoaded: true }); // 即使出错也标记为已加载完成
+      });
+  },
   
   async loadRecentRecords() {
     if (!this.data.openid) {
@@ -79,4 +170,12 @@ Page({
       wx.showToast({ title: '加载记录失败', icon: 'none' });
     }
   },
+
+  async processRecord(record, recordType) {
+    // 实现记录处理逻辑
+  },
+
+  formatDisplayTime(timestamp) {
+    // 实现时间格式化逻辑
+  }
 })

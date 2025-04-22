@@ -229,9 +229,32 @@
   margin-right: 20rpx;
 }
 
-.add-photo image {
+/* 使用CSS绘制加号图标 */
+.add-icon {
+  position: relative;
   width: 60rpx;
   height: 60rpx;
+}
+
+.add-icon:before,
+.add-icon:after {
+  content: '';
+  position: absolute;
+  background-color: #999;
+}
+
+.add-icon:before {
+  width: 60rpx;
+  height: 4rpx;
+  top: 28rpx;
+  left: 0;
+}
+
+.add-icon:after {
+  width: 4rpx;
+  height: 60rpx;
+  top: 0;
+  left: 28rpx;
 }
 
 /* 备注区域 */
@@ -281,4 +304,9 @@
 /* 针对 header 中编辑按钮的样式 (如果需要) */
 .edit-btn {
   color: var(--primary-color); /* 可以设置特定颜色 */
+}
+
+/* 删除按钮样式 */
+.delete-btn {
+  color: var(--danger-color) !important; /* 使用红色或危险色 */
 } 

@@ -32,6 +32,13 @@
   border-radius: 45rpx;
   font-size: 32rpx;
   margin-bottom: 60rpx;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #00c853;
+  color: white;
 }
 
 .features-preview {

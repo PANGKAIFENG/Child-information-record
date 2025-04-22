@@ -1,7 +1,8 @@
 <view class="container">
   <!-- 头部导航 -->
   <view class="header">
-    <text class="nav-btn cancel-btn" bindtap="cancelRecord">取消</text>
+    <text wx:if="{{isViewMode}}" class="nav-btn delete-btn" bindtap="handleDelete">删除</text>
+    <text wx:else class="nav-btn cancel-btn" bindtap="cancelRecord">取消</text>
     <text class="page-title">异常记录</text>
     <text wx:if="{{isViewMode}}" class="nav-btn edit-btn" bindtap="handleEdit">编辑</text>
     <text wx:else class="nav-btn save-btn" bindtap="saveRecord">保存</text>
@@ -94,7 +95,7 @@
             <view class="add-photo" 
                   bindtap="chooseImage" 
                   wx:if="{{!isViewMode && photos.length < 9}}">
-              <image src="/assets/images/icon-add-photo.svg" mode="aspectFit" />
+              <view class="add-icon"></view>
             </view>
           </view>
         </view>

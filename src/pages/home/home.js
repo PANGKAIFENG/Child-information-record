@@ -3,8 +3,12 @@ import { calculateAge } from '../../utils/util.js'; // 导入计算年龄函数
 
 const DEFAULT_AVATAR = '/src/assets/images/Avatar.png'; // 默认头像路径
 
+console.log('首页JS文件执行');
+
 Page({
   data: {
+    initialRenderDone: true, // 强制为true，跳过骨架屏
+    contentLoaded: true,     // 强制为true，显示内容
     isLoggedIn: false, // 新增：登录状态
     babyInfo: {        // 宝宝信息
       avatarUrl: DEFAULT_AVATAR, // 默认头像
@@ -22,6 +26,13 @@ Page({
   },
 
   onLoad: function() {
+    console.log('[onLoad] 首页加载开始');
+    wx.showToast({
+      title: '页面正在加载',
+      icon: 'loading',
+      duration: 2000
+    });
+    
     // 加载初始数据
     this.loadBabyInfo();
     this.loadTodayStats();
@@ -430,12 +441,8 @@ Page({
       case 'feeding':
         // 喂养记录使用 feedingType, amount 字段
         if (record.feedingType === '母乳') {
-          // 如果有amount字段，显示毫升，否则只显示"母乳"
-          if (record.amount) {
-            return `${record.feedingType} ${record.amount}ml`;
-          } else {
-            return `${record.feedingType}`;
-          }
+          // 始终显示毫升，没有amount时显示0ml
+          return `${record.feedingType} ${record.amount || '0'}ml`;
         }
         if (record.feedingType === '奶粉') {
           return `${record.feedingType} ${record.amount || '0'}ml`;
@@ -619,18 +626,18 @@ Page({
           } else {
             // 信息不完整，需要跳转到设置页面
             console.log('用户信息不完整，需要设置');
-            wx.switchTab({ url: '/src/pages/my/my' });
+            wx.switchTab({ url: '/pages/my/my' });
           }
         } else {
           // 未找到用户信息，跳转到设置页面
           console.log('未找到用户信息，需要设置');
-          wx.switchTab({ url: '/src/pages/my/my' });
+          wx.switchTab({ url: '/pages/my/my' });
         }
       })
       .catch(err => {
         console.error('查询用户信息失败:', err);
         // 出错时也跳转到设置页面
-        wx.switchTab({ url: '/src/pages/my/my' });
+        wx.switchTab({ url: '/pages/my/my' });
       });
   },
   
