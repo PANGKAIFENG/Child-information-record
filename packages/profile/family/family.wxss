@@ -199,32 +199,33 @@
   padding: 0 30rpx;
 }
 
+/* 操作按钮通用样式 */
 .action-btn {
-  width: 45%;
-  height: 88rpx;
-  line-height: 88rpx;
+  flex: 1; /* 让按钮平分空间 */
+  margin: 0 30rpx; /* 增大左右间距 */
+  height: 80rpx;
+  /* line-height: 80rpx; */
   font-size: 30rpx;
-  border-radius: 44rpx;
+  border-radius: 40rpx;
   text-align: center;
-  box-sizing: border-box;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+/* 邀请按钮特定样式 */
 .invite-btn {
   background-color: #3B82F6;
   color: #ffffff;
 }
 
-.disband-btn {
-  background-color: #ffffff;
-  color: #FF4D4F;
-  border: 1rpx solid #FF4D4F;
-}
-
+/* 解散/退出按钮特定样式 */
+.disband-btn,
 .leave-btn {
-  background-color: #ffffff;
+  background-color: #f8f8f8;
   color: #FF4D4F;
   border: 1rpx solid #FF4D4F;
-  width: 80%;
 }
 
 /* 邀请弹窗样式 */
@@ -308,12 +309,15 @@
 }
 
 .share-btn, .close-btn {
-  width: 45%;
+  width: 48%;
   height: 88rpx;
-  line-height: 88rpx;
   font-size: 30rpx;
   border-radius: 44rpx;
   text-align: center;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .share-btn {

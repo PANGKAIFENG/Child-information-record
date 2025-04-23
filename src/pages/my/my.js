@@ -396,8 +396,10 @@ Page({
    * 跳转到家庭管理页面
    */
   goToFamilyManage() {
+    // 跳转到家庭管理页面
+    console.log('---- goToFamilyManage FUNCTION CALLED! ----'); // 日志可以保留或移除
     wx.navigateTo({
-      url: '/src/pages/family/family'
+     url: '/packages/profile/family/family' // 恢复跳转，使用正确路径
     });
   },
 
