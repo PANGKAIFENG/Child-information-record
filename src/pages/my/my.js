@@ -310,7 +310,8 @@ Page({
    * 保存宝宝信息 (修改为调用云函数)
    */
   saveBabyInfo() {
-    console.log('Attempting to save baby info:', this.data.babyInfo);
+    const wasInfoSetBefore = this.data.isInfoSet; // 记录保存前的状态
+    console.log('Attempting to save baby info:', this.data.babyInfo, 'Was info set before:', wasInfoSetBefore);
     // --- 校验数据 (保持不变) --- 
     if (!this.data.babyInfo.avatarUrl || 
         !this.data.babyInfo.nickName || 
@@ -365,6 +366,21 @@ Page({
               homePage.onShow(); // 主动触发首页的onShow方法
             }
           }
+
+          // --- 新增：如果是首次设置，跳转到首页 ---
+          if (!wasInfoSetBefore) {
+            console.log('First time setup complete, navigating to home page.');
+            wx.switchTab({ 
+              url: '/src/pages/home/home',
+              fail: (err) => {
+                  console.error('SwitchTab to home failed:', err);
+                  // 跳转失败尝试提示
+                  wx.showToast({ title: '信息已保存，请手动切换到首页', icon: 'none'});
+              }
+            });
+          }
+          // ------------------------------------
+          
         } catch(e) {
           console.error('保存宝宝信息到本地缓存失败:', e);
         }

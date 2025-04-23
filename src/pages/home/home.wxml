@@ -72,13 +72,14 @@
   <!-- 页面实际内容 (仅在 contentLoaded 后显示) -->
   <view wx:if="{{contentLoaded}}">
     <view class="header">
-      <view class="user-info" bindtap="{{ !isLoggedIn ? 'goToMyPage' : '' }}">
+      <view class="user-info">
         <image class="avatar" src="{{babyInfo.avatarUrl}}" mode="aspectFill"></image>
         <view class="user-text">
           <text class="name">{{babyInfo.nickName || '宝宝'}}</text>
           <text class="age">{{babyInfo.age || '请先登录'}}</text>
         </view>
       </view>
+      <button wx:if="{{!isLoggedIn}}" class="home-login-button" bindtap="handleLogin">点击登录</button>
     </view>
 
     <view class="quick-access">

@@ -215,61 +215,88 @@ exports.main = async (event, context) => {
         res.data.forEach(record => {
           console.log('[getHomeData] Processing recent record raw data:', JSON.stringify(record)); // 记录原始数据
           try {
-            // 记录格式化时间使用的来源
-            const timeSourceValue = record.dateTime || record.createTime || record.timestamp;
-            const timeSourceField = record.dateTime ? 'dateTime' : (record.createTime ? 'createTime' : (record.timestamp ? 'timestamp' : 'none'));
-            console.log(`[getHomeData] Formatting time for record ${record._id} using source: ${timeSourceField}, value:`, timeSourceValue);
-            const formattedTime = formatRecordTime(timeSourceValue);
+            // --- 修改：根据类型确定用于显示的时间源 ---
+            let timeSourceForDisplay;
+            let timeSourceFieldForDisplay = 'none';
+            if (recordTypeInfo.type === 'sleep') {
+              // 【修正】睡眠记录应优先使用 startTime 显示
+              timeSourceForDisplay = record.startTime || record.createTime || record.timestamp;
+              timeSourceFieldForDisplay = record.startTime ? 'startTime' : (record.createTime ? 'createTime' : (record.timestamp ? 'timestamp' : 'none'));
+              console.log(`[getHomeData] Sleep record ${record._id}: Using '${timeSourceFieldForDisplay}' for display time.`);
+            } else {
+              // 其他记录优先使用 dateTime 显示 (保持不变)
+              timeSourceForDisplay = record.dateTime || record.createTime || record.timestamp;
+              timeSourceFieldForDisplay = record.dateTime ? 'dateTime' : (record.createTime ? 'createTime' : (record.timestamp ? 'timestamp' : 'none'));
+            }
+            // console.log(`[getHomeData] Formatting display time for record ${record._id} using source: ${timeSourceFieldForDisplay}, value:`, timeSourceForDisplay); // 日志可以简化或移除
+            const formattedTime = formatRecordTime(timeSourceForDisplay);
+            // --- 结束修改 ---
             
             const formattedDetail = formatRecordDetail(recordTypeInfo.type, record);
             
-            // --- 获取用于排序的时间戳 - 优先使用 dateTime ---
+            // --- 获取用于排序的时间戳 - 【修改】优先使用 createTime --- 
             let sortTimestamp = 0; 
-            let sourceField = 'none';
-            if (record.dateTime) {
-              try {
-                // 尝试将 dateTime (YYYY-MM-DD HH:mm) 转换为时间戳
-                sortTimestamp = new Date(record.dateTime.replace(/-/g, '/')).getTime(); // 兼容 iOS
-                sourceField = 'dateTime';
-              } catch (parseErr) {
-                 console.warn(`[getHomeData] Failed to parse dateTime for sorting: ${record.dateTime}`, parseErr);
-              }
-            }
-            // 如果 dateTime 无效或不存在，尝试 createTime
-            if (isNaN(sortTimestamp) || sortTimestamp === 0) {
-              if (record.createTime) {
-                 if (record.createTime instanceof Date) {
-                    sortTimestamp = record.createTime.getTime();
-                    sourceField = 'createTime (Date)';
-                 } else if (typeof record.createTime === 'number') {
-                    sortTimestamp = record.createTime;
-                    sourceField = 'createTime (number)';
-                 } else if (record.createTime.$date) {
-                    sortTimestamp = new Date(record.createTime.$date).getTime();
-                    sourceField = 'createTime ($date)';
-                 }
-              }
-            }
-            // 如果 createTime 也无效，尝试 timestamp
-             if (isNaN(sortTimestamp) || sortTimestamp === 0) {
-               if (record.timestamp && typeof record.timestamp === 'number') {
-                  sortTimestamp = record.timestamp;
-                  sourceField = 'timestamp';
+            let sourceFieldForSort = 'none';
+
+            // 优先尝试从 createTime 获取 (更可靠)
+            if (record.createTime) {
+               if (record.createTime instanceof Date) {
+                  sortTimestamp = record.createTime.getTime();
+                  sourceFieldForSort = 'createTime (Date)';
+               } else if (typeof record.createTime === 'number') { // 可能是数字时间戳
+                  sortTimestamp = record.createTime;
+                  sourceFieldForSort = 'createTime (number)';
+               } else if (record.createTime.$date) { // 云数据库日期对象
+                  try {
+                     sortTimestamp = new Date(record.createTime.$date).getTime();
+                     sourceFieldForSort = 'createTime ($date)';
+                  } catch (parseErr) {
+                      console.warn(`[getHomeData] Error parsing createTime.$date for record ${record._id}:`, parseErr);
+                  }
+               } else {
+                   console.warn(`[getHomeData] Unknown createTime format for record ${record._id}:`, record.createTime);
                }
             }
+
+            // 如果 createTime 无效或缺失，尝试 dateTime (作为次选)
+            if (isNaN(sortTimestamp) || sortTimestamp === 0) {
+                if (record.dateTime) { 
+                  try {
+                    // 尝试解析 YYYY-MM-DD HH:MM 格式
+                    sortTimestamp = new Date(record.dateTime.replace(/-/g, '/')).getTime(); 
+                    sourceFieldForSort = 'dateTime';
+                    if (isNaN(sortTimestamp)) { // 如果解析失败，重置为0
+                        console.warn(`[getHomeData] Failed to parse dateTime '${record.dateTime}' for record ${record._id}.`);
+                        sortTimestamp = 0;
+                    }
+                  } catch (parseErr) { 
+                      console.warn(`[getHomeData] Error parsing dateTime '${record.dateTime}' for record ${record._id}:`, parseErr);
+                      sortTimestamp = 0; 
+                  }
+                }
+            }
+
+            // 最后尝试 timestamp (通常也是服务器时间)
+            if (isNaN(sortTimestamp) || sortTimestamp === 0) {
+              if (record.timestamp && typeof record.timestamp === 'number') { 
+                  sortTimestamp = record.timestamp;
+                  sourceFieldForSort = 'timestamp';
+              }
+            }
+            
             // 最终检查
             if (isNaN(sortTimestamp)) {
-                console.warn(`[getHomeData] Could not get valid timestamp for record:`, record._id, `Source field tried: ${sourceField}`);
-                sortTimestamp = 0; // 无法获取有效时间戳，排序时放在最后
+                console.error(`[getHomeData] CRITICAL: Could not get ANY valid sort timestamp for record:`, record._id);
+                sortTimestamp = 0; // 确保 sortTimestamp 是数字
             }
-            console.log(`[getHomeData] Calculated sortTimestamp for record ${record._id}: ${sortTimestamp} from source: ${sourceField}`); // 记录计算出的排序时间戳和来源
+            // console.log(`[getHomeData] Calculated sortTimestamp for record ${record._id}: ${sortTimestamp} from source: ${sourceFieldForSort}`); // 日志可以简化
             // ----------------------------------------
             
             allRecentRecords.push({
               _id: record._id,
               type: recordTypeInfo.type,
-              sortTimestamp: sortTimestamp,
-              time: formattedTime,
+              sortTimestamp: sortTimestamp, // 使用计算出的排序时间戳
+              time: formattedTime, 
               detail: formattedDetail
             });
           } catch (formatError) {
@@ -278,7 +305,9 @@ exports.main = async (event, context) => {
         });
       });
 
+    // 在云端排序 - 【修改】只按 sortTimestamp (即 createTime) 排序
     allRecentRecords.sort((a, b) => b.sortTimestamp - a.sortTimestamp);
+
     const recentRecords = allRecentRecords.slice(0, MAX_RECENT_RECORDS);
     console.log(`[getHomeData] Final recentRecords to send (count: ${recentRecords.length}):`, JSON.stringify(recentRecords)); // 记录最终发送的数据
 

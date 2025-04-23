@@ -451,7 +451,8 @@ Page({
         date: this.data.date, // 使用页面中保存的日期
         time: this.data.time,
         createTime: new Date(), // 添加创建时间字段，用于云数据库排序
-        timestamp: new Date().getTime()
+        timestamp: new Date().getTime(),
+        dateTime: `${this.data.date} ${new Date(this.data.timerStartTime).toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit', hour12: false})}`
       };
     } else {
       // 手动输入模式
@@ -464,10 +465,13 @@ Page({
         date: this.data.date, // 使用页面中保存的日期
         time: this.data.time,
         createTime: new Date(), // 添加创建时间字段，用于云数据库排序
-        timestamp: new Date().getTime()
+        timestamp: new Date().getTime(),
+        dateTime: `${this.data.date} ${this.data.startTime}`
       };
     }
     
+    console.log('[Sleep Save] Data sent to addRecord:', JSON.stringify(recordData)); // 添加日志
+
     // 调用云函数保存记录到云数据库
     wx.cloud.callFunction({
       name: 'addRecord',

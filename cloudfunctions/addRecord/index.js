@@ -66,6 +66,59 @@ exports.main = async (event, context) => {
       recordId: recordId     // 添加生成的 recordId
     };
     
+    // --- 新增：特殊处理时间字段类型 ---
+    // 检查是否为睡眠记录，并尝试转换 startTime 和 dateTime 为 Date 对象
+    if (collectionName === 'sleep_records') {
+      console.log('[addRecord] Processing sleep record time fields...');
+      // 1. 处理 startTime
+      if (recordData.date && typeof recordData.date === 'string' && 
+          recordData.startTime && typeof recordData.startTime === 'string') {
+        try {
+          // 尝试拼接日期和时间，并创建 Date 对象 (确保兼容 iOS，使用 / 或 T)
+          const startTimeString = `${recordData.date.replace(/-/g, '/')} ${recordData.startTime}`;
+          const startTimeObject = new Date(startTimeString);
+          if (!isNaN(startTimeObject.getTime())) {
+            dataToSave.startTime = startTimeObject; // 使用 Date 对象覆盖原始字符串
+            console.log('[addRecord] Converted startTime to Date object:', dataToSave.startTime);
+          } else {
+            console.warn(`[addRecord] Failed to parse startTime string: ${startTimeString}`);
+          }
+        } catch (e) {
+          console.error('[addRecord] Error converting startTime to Date:', e, recordData);
+        }
+      } else {
+          console.warn('[addRecord] Missing or invalid date/startTime fields for sleep record:', recordData.date, recordData.startTime);
+      }
+
+      // 2. 处理 dateTime (如果存在)
+      if (recordData.dateTime && typeof recordData.dateTime === 'string') {
+         try {
+           // 尝试直接解析 dateTime 字符串 (确保兼容 iOS)
+           const dateTimeString = recordData.dateTime.replace(/-/g, '/');
+           const dateTimeObject = new Date(dateTimeString);
+           if (!isNaN(dateTimeObject.getTime())) {
+             dataToSave.dateTime = dateTimeObject; // 使用 Date 对象覆盖原始字符串
+             console.log('[addRecord] Converted dateTime to Date object:', dataToSave.dateTime);
+           } else {
+             console.warn(`[addRecord] Failed to parse dateTime string: ${dateTimeString}`);
+           }
+         } catch (e) {
+           console.error('[addRecord] Error converting dateTime to Date:', e, recordData);
+         }
+      } else {
+           // 如果睡眠记录没有提供 dateTime，可以考虑用转换后的 startTime 填充，
+           // 或者保持 undefined，取决于后续逻辑是否需要 dateTime
+           if(dataToSave.startTime instanceof Date) {
+              // dataToSave.dateTime = dataToSave.startTime;
+              // console.log('[addRecord] Set dateTime from converted startTime.');
+           } else {
+              console.warn('[addRecord] Missing dateTime field for sleep record and startTime conversion failed or missing.', recordData.dateTime);
+           }
+      }
+    } 
+    // (未来可以添加对其他记录类型时间字段的处理)
+    // --- 结束新增处理 ---
+    
     // --- 提取日期部分用于 recordDate_local ---
     if (recordData.dateTime && typeof recordData.dateTime === 'string') {
       const datePart = recordData.dateTime.split(' ')[0];

@@ -67,13 +67,13 @@ Page({
   onShow: function() {
     console.log('Home page onShow');
     // 检查登录状态和宝宝信息
-    const userLoggedIn = wx.getStorageSync('isLoggedIn') || false;
+    const userLoggedIn = wx.getStorageSync('isLoggedIn') || false; // 先读取登录状态
     const storedBabyInfo = wx.getStorageSync('babyInfo');
-    let currentBabyInfo = this.data.babyInfo; // 先用默认值
+    let currentBabyInfo = this.data.babyInfo;
     let babyAge = '';
 
     if (userLoggedIn && storedBabyInfo) {
-      // 如果已登录且缓存中有信息，则使用缓存信息
+      // 处理已登录用户的信息显示
       currentBabyInfo = storedBabyInfo;
       if (currentBabyInfo.birthDate) {
         babyAge = calculateAge(currentBabyInfo.birthDate);
@@ -81,33 +81,36 @@ Page({
       if (!currentBabyInfo.avatarUrl) {
         currentBabyInfo.avatarUrl = DEFAULT_AVATAR;
       }
-      currentBabyInfo.age = babyAge; // 将此行移入 if 块
+      currentBabyInfo.age = babyAge;
     } else {
-      // 未登录或无信息，确保使用默认值
+      // 处理未登录用户的信息显示
       currentBabyInfo = {
         avatarUrl: DEFAULT_AVATAR,
-        nickName: '宝宝', // 或提示登录
+        nickName: '宝宝',
         birthDate: null,
         age: '请先登录'
       };
     }
-    
+
+    // 设置初始状态，包括骨架屏状态
     this.setData({
       isLoggedIn: userLoggedIn,
       babyInfo: currentBabyInfo,
-      contentLoaded: false // 每次 onShow 先设置为 false，显示骨架屏
+      contentLoaded: false // 每次都先重置骨架屏状态
     });
 
+    // 只有当进入 onShow 时就已经登录，才主动加载云端数据
     if (userLoggedIn) {
-      // 调用新的统一加载函数
+      console.log('[onShow] User is logged in. Calling loadDataFromCloud.');
       this.loadDataFromCloud();
     } else {
-      // 未登录状态
-      console.log('[onShow] Setting contentLoaded to true for logged out user.');
+      // 如果进入 onShow 时未登录，则直接显示未登录内容，
+      // 后续的数据加载由 handleLogin 触发（如果用户点击登录）
+      console.log('[onShow] User is not logged in. Setting contentLoaded.');
       this.setData({
           todayStats: { feedingCount: '-', totalMilk: '-', sleepHours: '-', excretionCount: '-' },
           recentRecords: [],
-          contentLoaded: true // 未登录直接显示内容区（提示登录）
+          contentLoaded: true // 显示未登录界面
       });
     }
   },
@@ -364,4 +367,124 @@ Page({
       return '';
     }
   },
+
+  /**
+   * 修改：处理首页未登录状态下的点击事件
+   */
+  handleLogin() {
+    console.log('Login initiated from home page');
+    wx.showLoading({ title: '登录中...' });
+
+    let userOpenid = ''; // 用于存储 openid
+
+    wx.cloud.callFunction({
+      name: 'login',
+      data: {}
+    })
+    .then(res => {
+      if (res.result && res.result.success && res.result.openid) {
+        userOpenid = res.result.openid;
+        console.log('[Home Login] Success, openid:', userOpenid);
+        try {
+          wx.setStorageSync('isLoggedIn', true);
+          wx.setStorageSync('openid', userOpenid);
+          this.setData({ isLoggedIn: true }); 
+          // 返回检查用户注册状态的 Promise
+          return this.checkUserRegistration(userOpenid);
+        } catch (e) {
+          console.error('[Home Login] Save cache failed:', e);
+          wx.showToast({ title: '登录状态保存失败', icon: 'none' });
+          return Promise.reject('Save cache failed'); // 返回拒绝的 Promise
+        }
+      } else {
+        console.error('[Home Login] Cloud function failed:', res.result);
+        wx.showToast({ title: res.result.message || '登录失败', icon: 'none' });
+        return Promise.reject('Login cloud function failed');
+      }
+    })
+    .then(isRegisteredAndComplete => {
+      // 根据检查结果执行后续操作
+      wx.hideLoading(); // 在最终操作前隐藏 loading
+      if (isRegisteredAndComplete) {
+        console.log('[handleLogin] User check returned true. Updating UI and loading data.');
+        
+        // --- 新增：立即更新页面 babyInfo --- 
+        const confirmedBabyInfo = wx.getStorageSync('babyInfo');
+        if (confirmedBabyInfo) {
+            // 计算年龄
+            confirmedBabyInfo.age = this.calculateAge(confirmedBabyInfo.birthDate);
+            // 确保有头像
+             if (!confirmedBabyInfo.avatarUrl) {
+               confirmedBabyInfo.avatarUrl = DEFAULT_AVATAR;
+             }
+            this.setData({ babyInfo: confirmedBabyInfo });
+            console.log('[handleLogin] Updated page babyInfo immediately.');
+        } else {
+            console.warn('[handleLogin] Could not get babyInfo from storage even though user is registered.');
+        }
+        // --- 结束新增 ---
+        
+        this.loadDataFromCloud(); // 老用户，刷新统计和最近记录
+      } else {
+        console.log('[handleLogin] User check returned false, navigating to My page.');
+        wx.switchTab({ url: '/src/pages/my/my' }); // 新用户，跳转设置
+      }
+    })
+    .catch(err => {
+      wx.hideLoading(); // 确保隐藏 loading
+      console.error('[handleLogin] Overall login/check process failed:', err);
+      // 根据错误类型可以给出不同的提示，或者统一提示
+      if (typeof err !== 'string' || (!err.includes('Save cache failed') && !err.includes('Login cloud function failed'))) {
+         wx.showToast({ title: '登录或检查用户信息时出错', icon: 'none' });
+      }
+    });
+  },
+
+  /**
+   * 修改：检查用户注册状态，返回 Promise<boolean>
+   */
+  checkUserRegistration(openid) {
+    console.log('[checkUserRegistration] Checking user:', openid);
+    const db = wx.cloud.database();
+    // 返回一个 Promise
+    return new Promise((resolve, reject) => {
+      db.collection('users').where({ _openid: openid }).get()
+        .then(res => {
+          let isComplete = false;
+          if (res.data && res.data.length > 0 && res.data[0].babyInfo && 
+              res.data[0].babyInfo.nickName && res.data[0].babyInfo.birthDate && res.data[0].babyInfo.avatarUrl &&
+              res.data[0].babyInfo.nickName !== '小可爱') { 
+              
+            console.log('[checkUserRegistration] User registered and info complete.');
+            // 保存信息到缓存
+            wx.setStorageSync('isInfoSet', true);
+            wx.setStorageSync('babyInfo', res.data[0].babyInfo);
+            isComplete = true;
+          } else {
+            console.log('[checkUserRegistration] New user or incomplete info.');
+            // 标记信息未设置
+            wx.setStorageSync('isInfoSet', false);
+            isComplete = false;
+          }
+          resolve(isComplete); // 返回检查结果 (true 或 false)
+        })
+        .catch(err => {
+          console.error('[checkUserRegistration] Check user info failed:', err);
+          wx.showToast({ title: '检查用户信息失败', icon: 'none' });
+          // 检查失败，也认为需要设置信息（或可以根据业务决定）
+          wx.setStorageSync('isInfoSet', false);
+          resolve(false); // 返回 false，让流程引导去设置页
+          // 或者 reject(err); 如果希望上层 catch 处理
+        });
+    });
+  },
+
+  formatRecordTime(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleString();
+  },
+
+  formatDuration(duration) {
+    // Implementation of formatDuration function
+  }
 }) 

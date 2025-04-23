@@ -342,11 +342,14 @@ Page({
       date: this.data.currentDate,
       time: this.data.currentTime,
       notes: this.data.notes,
+      dateTime: `${this.data.currentDate} ${this.data.currentTime}`,
       recordType: 'supplement', // 记录类型：补给品
       createTime: new Date(), // 添加创建时间字段，用于云数据库排序
       timestamp: new Date().getTime()
     };
     
+    console.log('[Supplement Save] Data sent to addRecord:', JSON.stringify(recordData)); // 添加日志
+
     // 调用云函数保存记录到云数据库
     wx.cloud.callFunction({
       name: 'addRecord',

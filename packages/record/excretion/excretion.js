@@ -149,21 +149,25 @@ Page({
     wx.showLoading({ title: '保存中...' });
 
     // 组装记录数据
+    let excretionTypeChinese = '未知';
+    if (this.data.excretionType === 'pee') {
+        excretionTypeChinese = '小便';
+    } else if (this.data.excretionType === 'poop') {
+        excretionTypeChinese = '大便';
+    } else {
+        // 保留原始值以防万一
+        excretionTypeChinese = this.data.excretionType;
+    }
     const recordData = {
-      type: this.data.excretionType,
-      time: this.data.time,
-      date: this.data.date,
-      note: this.data.note,
-      photos: [], // 先置为空数组，后面会处理照片上传
-      createTime: new Date(), // 添加创建时间字段，用于云数据库排序
-      timestamp: new Date().getTime()
+      excretionType: excretionTypeChinese,
+      consistency: this.data.excretionType === 'poop' ? this.data.consistencyOptions[this.data.consistencyIndex] : null,
+      amount: this.data.excretionType === 'poop' ? this.data.amountOptions[this.data.amountIndex] : null,
+      dateTime: `${this.data.date} ${this.data.time}`,
+      note: this.data.note.trim(),
+      photos: [],
     };
 
-    // 如果是大便，添加形状和大便量信息
-    if (this.data.excretionType === 'poop') {
-      recordData.consistency = this.data.consistencyOptions[this.data.consistencyIndex];
-      recordData.amount = this.data.amountOptions[this.data.amountIndex];
-    }
+    console.log('[Excretion Save] Data sent to addRecord:', JSON.stringify(recordData));
 
     // 处理照片上传
     const uploadTasks = [];

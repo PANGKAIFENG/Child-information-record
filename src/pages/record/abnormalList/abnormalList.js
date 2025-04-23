@@ -137,21 +137,20 @@ Page({
   },
 
   /**
-   * 新增：跳转到登录页面 (修改为直接调用云函数登录)
+   * 新增：跳转到登录页面 (修改为调用云函数登录并检查注册状态)
    */
   goToLogin() {
-    console.log('直接调用登录云函数');
+    console.log('Login button clicked on abnormalList page');
     wx.showLoading({ title: '登录中...' });
 
     // 调用 login 云函数
     wx.cloud.callFunction({
       name: 'login',
-      data: {} // login 云函数不需要额外参数
+      data: {} 
     })
     .then(res => {
       console.log('调用云函数 login 成功:', res);
       if (res.result && res.result.success && res.result.openid) {
-        // 获取 openid 成功
         const openid = res.result.openid;
         console.log('Login success, openid:', openid);
         
@@ -160,33 +159,65 @@ Page({
           wx.setStorageSync('isLoggedIn', true);
           wx.setStorageSync('openid', openid);
           console.log('登录状态和 openid 已保存到本地缓存');
-          
           // 更新本页面登录状态
           this.setData({ isLoggedIn: true });
           
-          // 登录成功后立即加载记录
-          this.loadRecords();
-          
-          wx.showToast({ title: '登录成功', icon: 'success' });
+          // --- 新增：检查用户信息并决定后续操作 ---
+          this.checkUserRegistrationAndNavigate(openid);
+          // --- 结束新增 ---
+
         } catch (e) {
+          wx.hideLoading(); // 确保隐藏 loading
           console.error('保存登录状态到本地缓存失败:', e);
           wx.showToast({ title: '登录状态保存失败', icon: 'none' });
         }
       } else {
-        // 获取 openid 失败
+        wx.hideLoading(); // 确保隐藏 loading
         console.error('云函数 login 返回失败或缺少 openid:', res.result);
         wx.showToast({ title: res.result.message || '登录失败，请稍后重试', icon: 'none' });
       }
     })
     .catch(err => {
-      // 调用云函数本身失败
+      wx.hideLoading(); // 确保隐藏 loading
       console.error('调用云函数 login 失败:', err);
       wx.showToast({ title: '登录失败，请检查网络', icon: 'none' });
-    })
-    .finally(() => {
-      // 隐藏加载提示
-      wx.hideLoading();
     });
+    // finally 中的 hideLoading 移除，因为在 success 和 fail 中都处理了
+  },
+
+  /**
+   * 新增：检查用户注册状态并导航
+   */
+  checkUserRegistrationAndNavigate(openid) {
+    const db = wx.cloud.database();
+    db.collection('users').where({ _openid: openid }).get()
+      .then(res => {
+        wx.hideLoading(); // 在这里隐藏 loading
+        if (res.data && res.data.length > 0 && res.data[0].babyInfo && 
+            res.data[0].babyInfo.nickName && res.data[0].babyInfo.birthDate && res.data[0].babyInfo.avatarUrl &&
+            res.data[0].babyInfo.nickName !== '小可爱') { // 检查信息是否完整且有效
+            
+          console.log('用户已注册且信息完整，刷新当前页面');
+          // 保存信息到缓存
+          wx.setStorageSync('isInfoSet', true);
+          wx.setStorageSync('babyInfo', res.data[0].babyInfo);
+          // 刷新记录列表
+          this.loadRecords();
+        } else {
+          console.log('新用户或信息不完整，跳转到信息设置页面');
+          // 标记信息未设置
+          wx.setStorageSync('isInfoSet', false);
+          // 跳转到"我的"页面进行设置
+          wx.switchTab({ url: '/src/pages/my/my' }); // 使用 switchTab 跳转 TabBar 页面
+        }
+      })
+      .catch(err => {
+        wx.hideLoading(); // 确保隐藏 loading
+        console.error('检查用户信息失败:', err);
+        wx.showToast({ title: '检查用户信息失败', icon: 'none' });
+        // 即使检查失败，也尝试加载记录，因为可能只是网络问题
+        this.loadRecords(); 
+      });
   },
 
   /**
