@@ -12,6 +12,7 @@ Page({
   data: {
     isLoggedIn: false,    // 用户是否已登录
     isInfoSet: false,     // 宝宝信息是否已设置
+    isUploadingAvatar: false, // 新增：头像是否正在上传中
     // userInfo: null,    // 微信用户信息 (根据新需求，不再需要)
     babyInfo: {           // 宝宝信息
       avatarUrl: '',      // 头像临时路径或 File ID
@@ -256,6 +257,7 @@ Page({
       return;
     }
     wx.showLoading({ title: '上传头像中...' });
+    this.setData({ isUploadingAvatar: true }); // 开始上传，设置状态为 true
 
     const timestamp = Date.now();
     const fileExtension = tempPath.split('.').pop();
@@ -284,6 +286,7 @@ Page({
       },
       complete: () => {
         wx.hideLoading();
+        this.setData({ isUploadingAvatar: false }); // 上传结束（无论成功失败），设置状态为 false
       }
     });
   },
@@ -310,6 +313,12 @@ Page({
    * 保存宝宝信息 (修改为调用云函数)
    */
   saveBabyInfo() {
+    // 新增：检查头像是否正在上传
+    if (this.data.isUploadingAvatar) {
+        wx.showToast({ title: '头像上传中，请稍候...', icon: 'none' });
+        return; // 阻止保存
+    }
+
     const wasInfoSetBefore = this.data.isInfoSet; // 记录保存前的状态
     console.log('Attempting to save baby info:', this.data.babyInfo, 'Was info set before:', wasInfoSetBefore);
     // --- 校验数据 (保持不变) --- 
