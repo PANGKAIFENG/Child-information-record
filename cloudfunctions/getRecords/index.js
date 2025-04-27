@@ -10,42 +10,71 @@ const _ = db.command; // 获取查询指令
 exports.main = async (event, context) => {
   console.log('Executing getRecords cloud function. Event:', event);
   
-  // 获取调用用户的openid
   const wxContext = cloud.getWXContext();
   const openid = wxContext.OPENID;
   
-  // 确定要查询的集合名称，优先从 event 获取，默认为 abnormal_records
+  if (!openid) {
+    return { success: false, message: '无法获取用户信息', data: [] }; // 失败时返回空数组
+  }
+
+  // 新增：获取用户的 familyId
+  let userFamilyId = null;
+  try {
+    const userRes = await db.collection('users').where({ _openid: openid }).limit(1).get();
+    if (userRes.data && userRes.data.length > 0 && userRes.data[0].familyId) {
+      userFamilyId = userRes.data[0].familyId;
+      console.log(`[getRecords] User familyId found: ${userFamilyId}`);
+    } else {
+      console.warn('[getRecords] User does not have a familyId or user record not found.');
+      // 用户没有家庭，直接返回成功和空列表
+      return {
+        success: true, 
+        message: '用户未加入家庭', 
+        data: [] 
+      };
+    }
+  } catch (err) {
+    console.error('[getRecords] Error fetching user familyId:', err);
+    return { success: false, message: '获取家庭信息失败', data: [] };
+  }
+  // 结束新增
+
   const collectionName = event.collectionName || 'abnormal_records';
   const targetCollection = db.collection(collectionName);
-  console.log(`Current user openid: ${openid}, target collection: ${collectionName}`);
+  console.log(`Querying collection: ${collectionName} for familyId: ${userFamilyId}`);
 
   try {
-    // 构建基础查询条件：用户 openid
-    let baseQuery = { _openid: openid };
+    // 【修改】构建基础查询条件：家庭 familyId
+    let baseQuery = { familyId: userFamilyId };
 
-    // --- 添加基础有效性过滤条件 --- 
-    // （注意：where 条件对类型检查有限，主要确保字段存在）
+    // --- 针对 abnormal_records 添加过滤条件 (使用 familyId) --- 
     if (collectionName === 'abnormal_records') {
+        console.log('[getRecords] Applying additional filters for abnormal_records');
         baseQuery = _.and([
-            baseQuery, // 包含 openid
-            { recordId: _.exists(true) }, // 确保 recordId 存在
-            { dateTime: _.exists(true) }  // 确保 dateTime 存在
-            // 无法直接在 where 中检查 dateTime 是否为字符串，或 types 数组长度
+            baseQuery, // 包含 familyId
+            { recordId: _.exists(true) }, 
+            { dateTime: _.exists(true) }  
         ]);
     }
     // --- 结束添加过滤条件 ---
 
     // 查询数据库
-    const queryResult = await targetCollection
-      .where(baseQuery)
-      .orderBy('timestamp', 'desc') // 按时间戳降序排列
-      // .skip(event.skip || 0) // 分页逻辑（如果需要）
-      // .limit(event.limit || 100) // 限制数量（根据需要调整，避免一次获取过多）
-      .get();
+    const query = targetCollection.where(baseQuery)
+                                .orderBy('timestamp', 'desc'); // 排序
+    
+    // 应用分页（如果需要）
+    // if (event.skip) {
+    //   query = query.skip(event.skip);
+    // }
+    // if (event.limit) {
+    //   query = query.limit(event.limit);
+    // }
+    
+    const queryResult = await query.get();
 
-    console.log('Initial records fetched:', queryResult.data.length);
+    console.log('[getRecords] Initial records fetched:', queryResult.data.length);
 
-    // --- 在云函数内部进行更精确的过滤 (针对 abnormal_records) ---
+    // --- 在云函数内部进行更精确的过滤 (针对 abnormal_records，逻辑保持不变) ---
     let finalData = queryResult.data;
     if (collectionName === 'abnormal_records') {
         finalData = queryResult.data.filter(record => {
@@ -55,36 +84,32 @@ exports.main = async (event, context) => {
                 record._id && 
                 record.recordId &&
                 typeof record.dateTime === 'string' && 
-                // 类型检查 - 至少有一个类型或标记为"其它"
-                (
+                ((
                   (Array.isArray(record.types) && record.types.length > 0) || 
                   record.isOtherType === true
-                );
+                ));
              if (!isValid) {
-                 console.log('[getRecords] Filtering out invalid record in cloud function:', record._id, record.recordId);
+                 console.log('[getRecords] Filtering out invalid abnormal record in cloud function:', record._id, record.recordId);
              }
              return isValid;
         });
-        console.log('Records after cloud function filtering:', finalData.length);
+        console.log('[getRecords] Abnormal records after cloud function filtering:', finalData.length);
     }
     // --- 结束精确过滤 ---
     
-    // 注意：排序已在数据库层面完成 (orderBy timestamp desc)
-
-    // 返回成功结果和最终处理后的数据列表
     return {
       success: true,
       message: '记录获取成功',
-      data: finalData // 返回过滤后的数据数组
+      data: finalData
     };
 
   } catch (e) {
-    console.error('Error fetching records:', e);
-    // 返回失败结果
+    console.error('[getRecords] Error fetching records:', e);
     return {
       success: false,
       message: '记录获取失败',
-      error: e.message // 返回错误消息
+      error: e.message, // 返回错误消息
+      data: [] // 失败时也返回空数组
     };
   }
 };

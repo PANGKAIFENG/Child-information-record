@@ -48,40 +48,37 @@ exports.main = async (event, context) => {
     // 2. 删除用户关联的所有记录
     const deletePromises = RECORD_COLLECTIONS.map(async (collectionName) => {
       try {
-        // 分批次删除，先获取所有记录的ID
-        const recordsCollection = db.collection(collectionName)
-        
-        // 由于可能存在较多记录，需要分批次查询
-        // 先获取记录总数
-        const countResult = await recordsCollection.where({
+        console.log(`Attempting to remove records from ${collectionName} for openid: ${targetOpenid}`);
+        const deleteResult = await db.collection(collectionName).where({
           _openid: targetOpenid
-        }).count()
+        }).remove();
         
-        const total = countResult.total
-        const batchSize = 100 // 每次最多获取100条记录
-        
-        // 分批获取记录ID并删除
-        for (let i = 0; i < total; i += batchSize) {
-          const records = await recordsCollection.where({
-            _openid: targetOpenid
-          }).skip(i).limit(batchSize).get()
-          
-          // 删除这一批记录
-          for (const record of records.data) {
-            await recordsCollection.doc(record._id).remove()
-          }
-        }
-        
-        console.log(`成功删除${collectionName}中${total}条记录`)
-        return { collection: collectionName, count: total }
+        const count = deleteResult.stats.removed;
+        console.log(`Successfully removed ${count} records from ${collectionName}`);
+        return { collection: collectionName, success: true, count: count };
       } catch (err) {
-        console.error(`删除${collectionName}记录失败:`, err)
-        throw err
+        // 即使某个集合删除失败，也记录错误并继续尝试其他集合
+        console.error(`Failed to remove records from ${collectionName}:`, err);
+        // 可以选择抛出错误让 Promise.all 失败，或者返回失败状态
+        // return { collection: collectionName, success: false, error: err }; 
+        throw err; // 让 Promise.all 捕获到错误
       }
-    })
+    });
     
     // 等待所有删除操作完成
-    const results = await Promise.all(deletePromises)
+    let results;
+    try {
+       results = await Promise.all(deletePromises);
+       console.log('All record deletion attempts finished.', results);
+    } catch (batchError) {
+       // 如果 Promise.all 因为其中一个删除失败而 reject
+       console.error('One or more record deletion tasks failed:', batchError);
+       // 根据业务逻辑决定是否继续，这里选择中断并返回失败
+       return {
+           success: false,
+           message: '删除部分用户记录失败，请稍后重试'
+       }
+    }
     
     // 3. 更新用户的家庭关系状态
     await usersCollection.where({

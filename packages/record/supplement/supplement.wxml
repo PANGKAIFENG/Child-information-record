@@ -8,11 +8,20 @@
 
   <!-- 表单内容 -->
   <view class="form-container">
+    <!-- AD/D3轮换助手 -->
+    <supplement-rotation 
+      current-type="{{typeArray[typeIndex]}}" 
+      bind:statuschange="onRotationStatusChange" 
+      bind:recommendationchange="onRecommendationChange"
+      bind:quickselect="onQuickSelectType"
+      id="rotationAssistant"
+    ></supplement-rotation>
+    
     <!-- 补给品类型 -->
     <view class="form-item">
       <view class="form-label">补给品类型</view>
       <picker bindchange="bindTypeChange" value="{{typeIndex}}" range="{{typeArray}}">
-        <view class="form-picker">
+        <view class="form-picker {{rotationEnabled && typeArray[typeIndex] === 'AD' && recommendationType === 'AD' ? 'recommended-ad' : ''}} {{rotationEnabled && typeArray[typeIndex] === 'D3' && recommendationType === 'D3' ? 'recommended-d3' : ''}}">
           {{typeArray[typeIndex]}}
           <view class="picker-arrow"></view>
         </view>

@@ -9,6 +9,11 @@ Page({
     notes: '', // 备注
     isFormValid: false, // 表单是否有效
     duration: '', // 假设母乳有时长输入，字段名为 duration (单位：分钟)
+    
+    // 新增：提醒设置相关状态
+    reminderEnabled: false,
+    reminderHours: 3,
+    reminderMinutes: 0
   },
 
   onLoad: function(options) {
@@ -167,6 +172,13 @@ Page({
       notes: this.data.notes,
       // createTime 和 timestamp 由云函数添加
       // recordDate_local 由云函数从 dateTime 提取
+      
+      // 新增：添加提醒设置到记录数据
+      reminder: {
+          enabled: this.data.reminderEnabled,
+          hours: this.data.reminderHours,
+          minutes: this.data.reminderMinutes
+      }
     };
 
     // --- 处理母乳的时长 --- 
@@ -227,6 +239,17 @@ Page({
     .finally(() => {
       wx.hideLoading(); // 隐藏加载提示
     });
+  },
+
+  // 新增：处理提醒组件变化的事件
+  handleReminderChange: function(e) {
+    const { enabled, hours, minutes } = e.detail;
+    this.setData({
+      reminderEnabled: enabled,
+      reminderHours: hours,
+      reminderMinutes: minutes
+    });
+    console.log('Reminder settings changed:', e.detail);
   },
 
   // 保存记录到本地存储（已弃用，改为云存储）

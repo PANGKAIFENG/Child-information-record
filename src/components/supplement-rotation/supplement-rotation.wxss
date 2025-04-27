@@ -1,0 +1,142 @@
+/* src/components/supplement-rotation/supplement-rotation.wxss */
+
+.rotation-assistant {
+  background-color: #ffffff;
+  border-radius: 8rpx;
+  margin: 20rpx 0;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.assistant-header {
+  padding: 20rpx 30rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.assistant-title {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.title-text {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+  margin-right: 20rpx;
+}
+
+.assistant-switch {
+  margin-left: auto;
+}
+
+.collapse-icon {
+  width: 30rpx;
+  height: 30rpx;
+  position: relative;
+  transition: transform 0.3s;
+}
+
+.collapse-icon::before,
+.collapse-icon::after {
+  content: '';
+  position: absolute;
+  background-color: #999;
+  top: 50%;
+  left: 50%;
+}
+
+.collapse-icon::before {
+  width: 14rpx;
+  height: 2rpx;
+  margin-left: -7rpx;
+  margin-top: -1rpx;
+}
+
+.collapse-icon::after {
+  width: 2rpx;
+  height: 14rpx;
+  margin-left: -1rpx;
+  margin-top: -7rpx;
+  transition: transform 0.3s;
+}
+
+.collapse-icon.collapsed::after {
+  transform: rotate(90deg);
+}
+
+.assistant-body {
+  padding: 0 30rpx 20rpx;
+  transition: all 0.3s;
+}
+
+.assistant-content {
+  display: flex;
+  flex-direction: column;
+  font-size: 26rpx;
+}
+
+.history-record, .recommendation {
+  display: flex;
+  align-items: center;
+  margin: 8rpx 0;
+}
+
+.history-label, .recommendation-label {
+  color: #666;
+  margin-right: 10rpx;
+}
+
+.history-value, .recommendation-value {
+  font-weight: 500;
+  margin-right: 10rpx;
+}
+
+.quick-select-btn {
+  display: inline-block;
+  background-color: #f8f8f8;
+  color: #666;
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 30rpx;
+  margin-left: 15rpx;
+  border: 1rpx solid #e0e0e0;
+}
+
+.quick-select-btn:active {
+  background-color: #eee;
+}
+
+.type-ad {
+  color: #ff6b81;
+}
+
+.type-d3 {
+  color: #4da1ff;
+}
+
+.history-date {
+  color: #999;
+  font-size: 24rpx;
+}
+
+.assistant-disabled-tip {
+  padding: 10rpx 0;
+  color: #999;
+  font-size: 24rpx;
+  text-align: center;
+}
+
+/* 样式覆盖 */
+.rotation-assistant .wx-switch-input {
+  background-color: #ddd !important;
+  border-color: #ddd !important;
+}
+
+.rotation-assistant .wx-switch-input.wx-switch-input-checked {
+  background-color: #ff6b81 !important;
+  border-color: #ff6b81 !important;
+} 

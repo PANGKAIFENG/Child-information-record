@@ -43,11 +43,45 @@
   opacity: 1;
 }
 
-/* 表单样式 */
+/* 表单容器 */
 .form-container {
-  flex: 1;
-  padding: 30rpx;
-  overflow-y: auto;
+  background-color: #fff;
+  border-radius: 10rpx;
+  margin: 20rpx;
+  padding: 0 0 40rpx;
+  box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+/* 针对轮换助手的样式调整 */
+.form-container supplement-rotation {
+  display: block;
+  margin: 0 0 20rpx;
+}
+
+/* 推荐类型的高亮样式 */
+.form-picker.recommended-ad,
+.form-picker.recommended-d3 {
+  position: relative;
+}
+
+.form-picker.recommended-ad::after,
+.form-picker.recommended-d3::after {
+  content: '✓ 推荐';
+  position: absolute;
+  right: 40rpx;
+  font-size: 22rpx;
+  background-color: #ff6b81;
+  color: white;
+  padding: 2rpx 10rpx;
+  border-radius: 4rpx;
+}
+
+.form-picker.recommended-ad::after {
+  background-color: #ff6b81;
+}
+
+.form-picker.recommended-d3::after {
+  background-color: #4da1ff;
 }
 
 .form-item {

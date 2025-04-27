@@ -1,0 +1,37 @@
+<view class="rotation-assistant {{enabled ? 'enabled' : 'disabled'}}">
+  <view class="assistant-header" bindtap="toggleCollapsed">
+    <view class="assistant-title">
+      <text class="title-text">AD/D3轮换助手</text>
+      <view class="assistant-switch">
+        <switch checked="{{enabled}}" bindchange="onSwitchChange" color="#ff6b81" />
+      </view>
+    </view>
+    <view class="collapse-icon {{collapsed ? 'collapsed' : ''}}"></view>
+  </view>
+  
+  <view class="assistant-body" hidden="{{collapsed}}">
+    <block wx:if="{{enabled}}">
+      <view class="assistant-content">
+        <view class="history-record" wx:if="{{lastRecord}}">
+          <text class="history-label">上次服用:</text>
+          <text class="history-value {{lastRecord.type === 'AD' ? 'type-ad' : 'type-d3'}}">{{lastRecord.type}}</text>
+          <text class="history-date">({{lastRecord.date}})</text>
+        </view>
+        <view class="history-record" wx:else>
+          <text class="history-label">未发现AD/D3历史记录</text>
+        </view>
+        
+        <view class="recommendation" wx:if="{{recommendation}}">
+          <text class="recommendation-label">今日建议:</text>
+          <text class="recommendation-value {{recommendation === 'AD' ? 'type-ad' : 'type-d3'}}">{{recommendation}}</text>
+          <view class="quick-select-btn" bindtap="onQuickSelect">快速选择</view>
+        </view>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="assistant-disabled-tip">
+        <text>开启后将根据历史服用记录，推荐今日应服用的补剂类型</text>
+      </view>
+    </block>
+  </view>
+</view> 

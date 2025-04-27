@@ -1,0 +1,15 @@
+<view class="reminder-container">
+  <text class="reminder-label">设置提醒</text>
+  <view class="reminder-control">
+    <!-- 时间显示与选择触发 -->
+    <picker mode="multiSelector" bindchange="onTimeChange" value="{{pickerValue}}" range="{{timeRange}}" range-key="label">
+      <view class="time-display {{enabled ? '' : 'disabled'}}">
+        {{hours}}小时{{minutes}}分钟 <view class="edit-icon"></view>
+      </view>
+    </picker>
+    <!-- 分隔线 -->
+    <view class="separator"></view>
+    <!-- 开关 -->
+    <switch class="reminder-switch" checked="{{enabled}}" bindchange="onSwitchChange" color="#ff6b81" />
+  </view>
+</view> 

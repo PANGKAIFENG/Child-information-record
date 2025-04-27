@@ -105,47 +105,87 @@ function formatRecordDetail(type, record) {
 
 // 云函数入口函数
 exports.main = async (event, context) => {
-  // 获取调用用户的 openid
   const wxContext = cloud.getWXContext();
   const openid = wxContext.OPENID;
 
   if (!openid) {
-    return {
-      success: false,
-      message: '无法获取用户信息',
-      todayStats: {},
-      recentRecords: []
-    };
+    return { success: false, message: '无法获取用户信息', todayStats: {}, recentRecords: [], babyInfo: null };
   }
-
   console.log(`[getHomeData] Received request for openid: ${openid}`);
 
+  // --- 新增：获取用户的 familyId --- 
+  let userFamilyId = null;
+  let userDoc = null;
   try {
-    // --- 1. 获取今日统计 (使用用户时区，假设为 UTC+8) ---
-    const now = new Date(); // 当前 UTC 时间
-    const timezoneOffsetHours = 8; // 假设用户时区为 UTC+8
-    // 计算用户时区的当前时间
-    const userTime = new Date(now.getTime() + timezoneOffsetHours * 60 * 60 * 1000);
+    const userRes = await db.collection('users').where({ _openid: openid }).limit(1).get();
+    if (userRes.data && userRes.data.length > 0) {
+        userDoc = userRes.data[0];
+        if (userDoc.familyId) {
+           userFamilyId = userDoc.familyId;
+           console.log('[getHomeData] User familyId found:', userFamilyId);
+        } else {
+           console.warn('[getHomeData] User does not have a familyId.');
+           // 用户没有家庭，返回空数据和提示，或根据需要处理
+           return {
+             success: true, // 函数本身执行成功，但没有家庭数据
+             message: '用户未加入家庭',
+             todayStats: { feedingCount: '-', totalMilk: '-', sleepHours: '-', excretionCount: '-' },
+             recentRecords: [],
+             babyInfo: null // 没有家庭就没有共享宝宝信息
+           };
+        }
+    } else {
+        console.error('[getHomeData] User record not found for openid:', openid);
+        return { success: false, message: '未找到用户记录', todayStats: {}, recentRecords: [], babyInfo: null };
+    }
+  } catch (err) {
+    console.error('[getHomeData] Error fetching user familyId:', err);
+    return { success: false, message: '获取用户信息失败', todayStats: {}, recentRecords: [], babyInfo: null };
+  }
+  // --- 结束新增 ---
+  
+  try {
+    // --- 新增：获取共享的 babyInfo --- 
+    let sharedBabyInfo = null;
+    try {
+        const familyRes = await db.collection('families').doc(userFamilyId).get();
+        if (familyRes.data && familyRes.data.babyInfo) {
+            sharedBabyInfo = familyRes.data.babyInfo;
+            console.log('[getHomeData] Found shared babyInfo from family:', sharedBabyInfo);
+            // 可以补充计算年龄的逻辑，如果前端需要
+            // if (sharedBabyInfo.birthDate) { ... calculate age ... }
+        } else {
+            console.warn('[getHomeData] Family document or babyInfo not found for familyId:', userFamilyId);
+            // 家庭信息或宝宝信息缺失，可以返回默认值或 null
+        }
+    } catch (famErr) {
+        console.error('[getHomeData] Error fetching family babyInfo:', famErr);
+        // 获取家庭信息失败
+    }
+    // --- 结束新增 ---
 
-    // 从调整后的时间获取 UTC 年月日 (因为 Date 对象内部是 UTC)
+    // --- 1. 获取今日统计 (修改查询条件为 familyId) ---
+    const now = new Date(); 
+    const timezoneOffsetHours = 8; 
+    const userTime = new Date(now.getTime() + timezoneOffsetHours * 60 * 60 * 1000);
     const year = userTime.getUTCFullYear();
     const month = (userTime.getUTCMonth() + 1).toString().padStart(2, '0');
     const day = userTime.getUTCDate().toString().padStart(2, '0');
     const todayDateStr = `${year}-${month}-${day}`;
-    console.log(`[getHomeData] Current UTC time: ${now.toISOString()}, Adjusted User Time (UTC+${timezoneOffsetHours}): ${userTime.toISOString()}, Querying stats for date: ${todayDateStr}`); // 记录查询日期及计算过程
+    console.log(`[getHomeData] Querying stats for familyId: ${userFamilyId}, date: ${todayDateStr}`); 
 
     const statsPromises = [
       // 查询今日喂养记录
       db.collection('feeding_records')
-        .where({ _openid: openid, recordDate_local: todayDateStr })
+        .where({ familyId: userFamilyId, recordDate_local: todayDateStr }) // 改为 familyId
         .get(),
       // 查询今日睡眠记录
       db.collection('sleep_records')
-        .where({ _openid: openid, recordDate_local: todayDateStr })
+        .where({ familyId: userFamilyId, recordDate_local: todayDateStr }) // 改为 familyId
         .get(),
       // 查询今日排泄记录
       db.collection('excretion_records')
-        .where({ _openid: openid, recordDate_local: todayDateStr })
+        .where({ familyId: userFamilyId, recordDate_local: todayDateStr }) // 改为 familyId
         .get()
     ];
 
@@ -153,7 +193,7 @@ exports.main = async (event, context) => {
     const feedingResult = statsResults[0].data;
     const sleepResult = statsResults[1].data;
     const excretionResult = statsResults[2].data;
-    console.log('[getHomeData] Stats query results:', { feeding: feedingResult.length, sleep: sleepResult.length, excretion: excretionResult.length }); // 记录查询结果数量
+    console.log('[getHomeData] Stats query results (family):', { feeding: feedingResult.length, sleep: sleepResult.length, excretion: excretionResult.length });
 
     // 在云端计算今日统计
     const feedingCount = feedingResult.length;
@@ -188,21 +228,23 @@ exports.main = async (event, context) => {
       sleepHours: totalSleepHours,
       excretionCount: excretionCount
     };
-    console.log(`[getHomeData] Calculated todayStats:`, todayStats);
+    console.log(`[getHomeData] Calculated todayStats (family):`, todayStats);
 
-    // --- 2. 获取最近记录 ---
+    // --- 2. 获取最近记录 (修改查询条件为 familyId) ---
     const MAX_RECENT_RECORDS = 5;
     const recordTypes = [
       { collection: 'feeding_records', type: 'feeding' },
       { collection: 'sleep_records', type: 'sleep' },
       { collection: 'excretion_records', type: 'excretion' },
       { collection: 'supplement_records', type: 'supplement' }
+      // 异常记录是否也属于家庭共享？如果需要，也加入这里
+      // { collection: 'abnormal_records', type: 'abnormal' }
     ];
 
     const recentPromises = recordTypes.map(rt =>
       db.collection(rt.collection)
-        .where({ _openid: openid })
-        .orderBy('createTime', 'desc') // 使用 _openid+createTime 索引
+        .where({ familyId: userFamilyId }) // 改为 familyId
+        .orderBy('createTime', 'desc') 
         .limit(MAX_RECENT_RECORDS)
         .get()
     );
@@ -309,23 +351,24 @@ exports.main = async (event, context) => {
     allRecentRecords.sort((a, b) => b.sortTimestamp - a.sortTimestamp);
 
     const recentRecords = allRecentRecords.slice(0, MAX_RECENT_RECORDS);
-    console.log(`[getHomeData] Final recentRecords to send (count: ${recentRecords.length}):`, JSON.stringify(recentRecords)); // 记录最终发送的数据
+    console.log(`[getHomeData] Final recentRecords (family, count: ${recentRecords.length}):`, JSON.stringify(recentRecords)); 
 
-    // --- 3. 返回结果 ---
+    // --- 3. 返回结果 (加入 babyInfo) ---
     return {
       success: true,
       message: '首页数据获取成功',
+      babyInfo: sharedBabyInfo, // 返回从 family 获取的 babyInfo
       todayStats: todayStats,
       recentRecords: recentRecords
     };
 
   } catch (error) {
-    console.error('[getHomeData] Error executing function:', error);
-    console.error('[getHomeData] Error details:', { error: error }); // 记录 catch 到的错误详情
+    console.error('[getHomeData] Error executing main logic:', error);
     return {
       success: false,
       message: '获取首页数据失败',
       error: error.message,
+      babyInfo: null, // 出错也返回 null
       todayStats: {},
       recentRecords: []
     };

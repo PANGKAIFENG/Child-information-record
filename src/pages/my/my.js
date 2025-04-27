@@ -376,17 +376,39 @@ Page({
             }
           }
 
-          // --- 新增：如果是首次设置，跳转到首页 ---
+          // --- 修改：如果是首次设置，跳转前先创建家庭 ---
           if (!wasInfoSetBefore) {
-            console.log('First time setup complete, navigating to home page.');
-            wx.switchTab({ 
-              url: '/src/pages/home/home',
-              fail: (err) => {
-                  console.error('SwitchTab to home failed:', err);
-                  // 跳转失败尝试提示
-                  wx.showToast({ title: '信息已保存，请手动切换到首页', icon: 'none'});
+            console.log('First time setup complete, attempting to create family automatically...');
+            // 调用 createFamily 云函数
+            wx.cloud.callFunction({
+              name: 'createFamily',
+              data: {}
+            })
+            .then(createRes => {
+              console.log('Auto create family result:', createRes);
+              if (createRes.result && createRes.result.success) {
+                console.log('Family created automatically, familyId:', createRes.result.familyId);
+                // 家庭创建成功，跳转到首页
+                wx.switchTab({ 
+                  url: '/src/pages/home/home',
+                  fail: (err) => { console.error('SwitchTab to home failed after family creation:', err); }
+                });
+              } else {
+                // 家庭创建失败，提示用户
+                console.error('Auto create family failed:', createRes.result);
+                wx.showToast({ title: createRes.result?.message || '自动创建家庭失败', icon: 'none' });
+                // 这里可以选择不跳转，让用户留在"我的"页面处理，或者仍然尝试跳转
+                // wx.switchTab({ url: '/src/pages/home/home' }); 
               }
+            })
+            .catch(createErr => {
+              console.error('Error calling createFamily function:', createErr);
+              wx.showToast({ title: '自动创建家庭出错', icon: 'none' });
+              // 同上，决定失败后是否跳转
             });
+          } else {
+             // 如果不是首次设置，更新信息后无需特殊跳转 (除非需要返回上一页等)
+             console.log('Baby info updated (not first time), staying on My page or previous logic applies.');
           }
           // ------------------------------------
           

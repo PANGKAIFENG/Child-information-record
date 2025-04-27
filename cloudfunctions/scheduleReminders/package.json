@@ -1,0 +1,14 @@
+{
+  "name": "scheduleReminders",
+  "version": "1.0.0",
+  "description": "定时检查和发送已计划的提醒消息",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+} 

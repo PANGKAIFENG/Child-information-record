@@ -1,0 +1,69 @@
+/* src/components/reminder-setting/reminder-setting.wxss */
+.reminder-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 30rpx;
+  background-color: #fff;
+  border-bottom: 1rpx solid #f0f0f0;
+  font-size: 30rpx;
+  color: #333;
+}
+
+.reminder-label {
+  flex-shrink: 0;
+  margin-right: 20rpx;
+  font-weight: 500;
+}
+
+.reminder-control {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.time-display {
+  color: #333;
+  display: flex;
+  align-items: center;
+  padding-right: 10rpx;
+  font-size: 28rpx;
+}
+
+.time-display.disabled {
+  color: #999; /* 禁用时颜色变灰 */
+}
+
+.edit-icon {
+  width: 24rpx;
+  height: 24rpx;
+  margin-left: 10rpx;
+  background-image: url("data:image/svg+xml,%3Csvg t='1699432234346' class='icon' viewBox='0 0 1024 1024' version='1.1' xmlns='http://www.w3.org/2000/svg' p-id='2388' width='200' height='200'%3E%3Cpath d='M626.857143 455.428571v-36.571428L512 323.428571 397.142857 418.857143v36.571428h-73.142857v292.571429h73.142857v36.571429h219.428572v-36.571429h73.142857v-292.571429h-73.142857z m-73.142857 256h-73.142857v-73.142857h73.142857v73.142857z m-73.142857-182.857142v-36.571429h73.142857v36.571429h36.571428v73.142857h-146.285714v-73.142857h36.571429z m-109.714286-146.285715c0 20.224 16.347429 36.571429 36.571428 36.571429s36.571429-16.347429 36.571429-36.571429a36.571429 36.571429 0 0 0-73.142857 0z m219.428571 0a36.571429 36.571429 0 1 0 73.142857 0 36.571429 36.571429 0 0 0-73.142857 0z' fill='%23999999' p-id='2389'%3E%3C/path%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  display: inline-block;
+}
+
+.separator {
+  width: 1rpx;
+  height: 40rpx;
+  background-color: #e0e0e0;
+  margin: 0 20rpx;
+}
+
+.reminder-switch {
+  transform: scale(0.8);
+  transform-origin: right center;
+}
+
+/* wx switch 组件自定义样式 */
+.reminder-switch .wx-switch-input {
+  background-color: #ddd !important;
+  border-color: #ddd !important;
+}
+
+.reminder-switch .wx-switch-input.wx-switch-input-checked {
+  background-color: #ff6b81 !important;
+  border-color: #ff6b81 !important;
+} 

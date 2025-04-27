@@ -52,6 +52,9 @@
       </view>
     </view>
 
+    <!-- 设置提醒 -->
+    <reminder-setting bind:change="handleReminderChange"></reminder-setting>
+
     <!-- 备注 -->
     <view class="form-item">
       <text class="form-label">备注</text>

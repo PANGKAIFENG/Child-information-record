@@ -15,11 +15,29 @@ exports.main = async (event, context) => {
 
   if (!openid) {
     console.error('Error: Failed to get OpenID');
-    return { 
-      success: false, 
-      message: '无法获取用户信息' 
-    };
+    return { success: false, message: '无法获取用户信息' };
   }
+
+  // 新增：获取用户的 familyId
+  let userFamilyId = null;
+  try {
+    const userRes = await db.collection('users').where({ _openid: openid }).limit(1).get();
+    if (userRes.data && userRes.data.length > 0 && userRes.data[0].familyId) {
+      userFamilyId = userRes.data[0].familyId;
+      console.log('[addRecord] User familyId found:', userFamilyId);
+    } else {
+      console.warn('[addRecord] User does not have a familyId or user record not found.');
+      // 用户必须有家庭才能添加记录
+      return {
+        success: false,
+        message: '您需要先创建或加入一个家庭才能添加记录'
+      };
+    }
+  } catch (err) {
+    console.error('[addRecord] Error fetching user familyId:', err);
+    return { success: false, message: '获取家庭信息失败，无法添加记录' };
+  }
+  // 结束新增
 
   // 确定要使用的集合名称
   let collectionName = 'abnormal_records'; // 默认集合
@@ -56,15 +74,98 @@ exports.main = async (event, context) => {
   try {
     // 准备要保存的数据，添加服务器时间和 OpenID
     const serverDate = db.serverDate();
-    // 生成一个唯一的 recordId (可以使用时间戳+随机数，或更健壮的唯一ID生成方式)
     const recordId = Date.now().toString() + Math.random().toString(36).substring(2, 8);
     const dataToSave = {
       ...recordData,
       _openid: openid,     // 添加用户 OpenID
+      familyId: userFamilyId, // 新增：添加家庭 ID
       createTime: serverDate, // 添加服务器时间
       timestamp: serverDate,  // 使用服务器时间作为 timestamp
       recordId: recordId     // 添加生成的 recordId
     };
+    
+    // --- 处理 reminder 字段，计算下一次提醒时间 ---
+    if (recordData.reminder && recordData.reminder.enabled) {
+      console.log('[addRecord] Processing reminder settings:', recordData.reminder);
+      
+      try {
+        // 解析记录的日期时间
+        let recordDateTime;
+        
+        // 尝试从 dateTime 字段解析日期时间
+        if (recordData.dateTime && typeof recordData.dateTime === 'string') {
+          recordDateTime = new Date(recordData.dateTime.replace(/-/g, '/'));
+        } 
+        // 如果没有 dateTime 或解析失败，尝试从 date 和 time 字段组合解析
+        else if (recordData.date && recordData.time) {
+          recordDateTime = new Date(`${recordData.date.replace(/-/g, '/')} ${recordData.time}`);
+        } 
+        // 如果都没有，使用当前时间
+        else {
+          recordDateTime = new Date();
+        }
+        
+        if (isNaN(recordDateTime.getTime())) {
+          throw new Error('Invalid date time from record');
+        }
+        
+        // 计算下一次提醒的时间
+        const reminderHours = parseInt(recordData.reminder.hours) || 0;
+        const reminderMinutes = parseInt(recordData.reminder.minutes) || 0;
+        const totalMinutesToAdd = (reminderHours * 60) + reminderMinutes;
+        
+        // 添加提醒时间间隔
+        const nextReminderTime = new Date(recordDateTime.getTime() + (totalMinutesToAdd * 60 * 1000));
+        
+        // 更新保存的数据，添加 nextReminderTime 字段
+        dataToSave.reminder = {
+          ...recordData.reminder,
+          nextReminderTime, // 存储计算出的下一次提醒时间
+          reminderStatus: 'scheduled' // 标记提醒的状态: scheduled, sent, canceled
+        };
+        
+        console.log('[addRecord] Calculated next reminder time:', nextReminderTime);
+        
+        // 如果是 feeding_records 集合且开启了提醒，在 scheduled_reminders 集合中添加一条提醒记录
+        if (collectionName === 'feeding_records') {
+          try {
+            const reminderData = {
+              type: 'feeding',
+              userId: openid,
+              familyId: userFamilyId,
+              sourceRecordId: recordId,
+              scheduledTime: nextReminderTime,
+              status: 'pending', // pending, sent, canceled
+              createdAt: serverDate,
+              templateId: '58y3Xv0CmTCdnlHLCaG-v7riiT_GXu-xU3RFBSr0V1o', // 订阅消息模板 ID
+              // 添加模板消息所需的变量
+              templateData: {
+                feedingType: recordData.feedingType || '喂养', // 填充模板中的喂养类型
+                amount: recordData.amount ? `${recordData.amount}${recordData.unit || 'ml'}` : '未记录', // 填充模板中的奶量
+                dateTime: recordData.dateTime || `${recordData.date} ${recordData.time}` // 填充模板中的时间
+              }
+            };
+            
+            await db.collection('scheduled_reminders').add({
+              data: reminderData
+            });
+            
+            console.log('[addRecord] Added scheduled reminder:', reminderData);
+          } catch (e) {
+            console.error('[addRecord] Error scheduling reminder:', e);
+            // 不阻止主流程，即使提醒创建失败也继续添加记录
+          }
+        }
+      } catch (e) {
+        console.error('[addRecord] Error processing reminder:', e);
+        // 只记录错误，不阻止主流程
+        dataToSave.reminder = {
+          ...recordData.reminder,
+          error: 'Failed to calculate reminder time' 
+        };
+      }
+    }
+    // --- 结束 reminder 处理 ---
     
     // --- 新增：特殊处理时间字段类型 ---
     // 检查是否为睡眠记录，并尝试转换 startTime 和 dateTime 为 Date 对象

@@ -27,7 +27,11 @@ Page({
     maxNoteLength: 200,
     
     // 表单是否有效
-    isFormValid: false
+    isFormValid: false,
+    
+    // 轮换助手相关
+    rotationEnabled: false,        // 轮换助手是否启用
+    recommendationType: ''         // 建议的补剂类型
   },
 
   /**
@@ -48,6 +52,11 @@ Page({
       // 初始化表单有效性检查
       this.checkFormValidity();
     }
+    
+    // 加载轮换助手状态
+    this.setData({
+      rotationEnabled: wx.getStorageSync('adD3RotationEnabled') || false
+    });
   },
 
   /**
@@ -127,7 +136,8 @@ Page({
    */
   bindTypeChange: function (e) {
     const index = e.detail.value;
-    const showCustom = (this.data.typeArray[index] === '自定义');
+    const selectedType = this.data.typeArray[index];
+    const showCustom = (selectedType === '自定义');
     
     this.setData({
       typeIndex: index,
@@ -138,6 +148,27 @@ Page({
     wx.setStorageSync('lastSupplementTypeIndex', index);
     
     this.checkFormValidity();
+    
+    // 如果选择的是AD或D3，并且轮换助手开启，需要触发轮换助手的刷新
+    if ((selectedType === 'AD' || selectedType === 'D3') && this.data.rotationEnabled) {
+      // 等待DOM更新后再获取组件实例
+      setTimeout(() => {
+        const rotationAssistant = this.selectComponent('#rotationAssistant');
+        if (rotationAssistant) {
+          rotationAssistant.refresh();
+        }
+      }, 100);
+      
+      // 如果选择符合推荐，可以给用户一个积极的反馈
+      if (selectedType === this.data.recommendationType) {
+        wx.vibrateShort(); // 轻微震动反馈
+        wx.showToast({
+          title: '已选择推荐补剂',
+          icon: 'success',
+          duration: 1000
+        });
+      }
+    }
   },
 
   /**
@@ -312,6 +343,87 @@ Page({
   },
 
   /**
+   * 轮换助手状态变化事件
+   */
+  onRotationStatusChange: function (e) {
+    const { enabled } = e.detail;
+    this.setData({ rotationEnabled: enabled });
+  },
+  
+  /**
+   * 轮换助手推荐变化事件
+   */
+  onRecommendationChange: function (e) {
+    const { recommendation } = e.detail;
+    this.setData({ recommendationType: recommendation });
+    
+    // 如果启用了轮换助手，并且有推荐类型，尝试在类型选择列表中找到对应类型
+    if (this.data.rotationEnabled && recommendation) {
+      const typeIndex = this.data.typeArray.findIndex(type => type === recommendation);
+      if (typeIndex !== -1) {
+        // 不自动选择，只高亮显示推荐类型，让用户自己决定是否选择
+        // 但可以添加一个帮助提示
+        wx.showToast({
+          title: `推荐服用${recommendation}`,
+          icon: 'none',
+          duration: 2000
+        });
+      }
+    }
+  },
+  
+  /**
+   * 选择推荐的补剂类型
+   * 可以被轮换助手组件调用，也可以添加一个按钮供用户点击
+   */
+  selectRecommendedType: function () {
+    if (!this.data.rotationEnabled || !this.data.recommendationType) {
+      return;
+    }
+    
+    const typeIndex = this.data.typeArray.findIndex(type => type === this.data.recommendationType);
+    if (typeIndex !== -1 && typeIndex !== this.data.typeIndex) {
+      this.setData({ typeIndex: typeIndex });
+      
+      // 保存上次选择的类型索引
+      wx.setStorageSync('lastSupplementTypeIndex', typeIndex);
+      
+      // 提示用户已自动选择
+      wx.showToast({
+        title: `已选择${this.data.recommendationType}`,
+        icon: 'success',
+        duration: 1500
+      });
+      
+      this.checkFormValidity();
+    }
+  },
+  
+  /**
+   * 响应轮换助手的快速选择事件
+   */
+  onQuickSelectType: function (e) {
+    // 直接调用选择推荐类型的方法
+    this.selectRecommendedType();
+  },
+  
+  /**
+   * 在保存记录前执行
+   */
+  beforeSave: function () {
+    // 如果是AD或D3记录，保存后需要刷新轮换助手
+    const selectedType = this.data.typeArray[this.data.typeIndex];
+    if ((selectedType === 'AD' || selectedType === 'D3') && this.data.rotationEnabled) {
+      setTimeout(() => {
+        const rotationAssistant = this.selectComponent('#rotationAssistant');
+        if (rotationAssistant) {
+          rotationAssistant.refresh();
+        }
+      }, 100);
+    }
+  },
+
+  /**
    * 保存按钮事件
    */
   onSave: function () {
@@ -322,6 +434,9 @@ Page({
       });
       return;
     }
+    
+    // 执行保存前的处理
+    this.beforeSave();
     
     wx.showLoading({ title: '保存中...' });
     
